@@ -3,10 +3,15 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+type FAQItem = {
+    question: string;
+    answer: string;
+};
+
 export default function FAQ() {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-    const faqs = [
+    const faqs: FAQItem[] = [
         {
             question: "สมัครใช้งานต้องใช้เอกสารอะไรบ้าง?",
             answer: "ใช้บัตรประชาชน หนังสือรับรองบริษัท และเอกสารบัญชีธนาคาร",
@@ -38,11 +43,7 @@ export default function FAQ() {
     ];
 
     const toggleFAQ = (index: number) => {
-        if (openIndex === index) {
-            setOpenIndex(null);
-        } else {
-            setOpenIndex(index);
-        }
+        setOpenIndex(openIndex === index ? null : index);
     };
 
     return (
@@ -55,7 +56,7 @@ export default function FAQ() {
                 <div className="space-y-2">
                 {faqs.map((faq, index) => (
                     <div
-                    key={index}
+                    key={faq.question}
                     className="border-b border-gray-300 pb-4"
                     >
                     <button

@@ -1,5 +1,10 @@
+type statsItem = {
+    label: string;
+    value: string;
+};
+
 export default function Stats() {
-    const stats = [
+    const stats: statsItem[] = [
         {
             label: "ร้านค้าที่ใช้งาน",
             value: "1.1K+"
@@ -22,9 +27,9 @@ export default function Stats() {
         <section className="bg-white">
             <div className="mx-auto max-w-6xl px-6 py-10">
                 <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                    {stats.map((stat, index) => (
+                    {stats.map((stat) => (
                         <div
-                            key={index}
+                            key={stat.label}
                             className="border-gray-200 text-center md:border-r last:border-r-0"
                         >
                             <p className="text-md text-gray-800">{stat.label}</p>

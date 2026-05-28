@@ -6,7 +6,15 @@ import {
   BarChart3,
   Zap,
   BadgeCheck,
+  type LucideIcon,
 } from "lucide-react";
+
+type benefitsItem = {
+    title: string;
+    description: string;
+    icon: LucideIcon;
+    image: string;
+}
 
 export default function Benefits() {
     const benefits = [
@@ -53,9 +61,9 @@ export default function Benefits() {
                     </p>
 
                     <div className="grid gap-6 md:grid-cols-2">
-                        {benefits.map((benefit, index) => (
+                        {benefits.map((benefit) => (
                                 <motion.div
-                                    key={index}
+                                    key={benefit.title}
                                     className="grid items-center gap-6 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition hover:scale-105 hover:shadow-lg md:grid-cols-2"
                                     initial={{ opacity: 0, x: -60 }}
                                     whileInView={{ opacity: 1, x: 0 }}
