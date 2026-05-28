@@ -6,7 +6,7 @@ import Benefits from "@/components/sections/Benefits";
 
 export default function Home() {
   return (
-    <main>
+    <main className="bg-white">
       <Navbar />
       <Hero />
       <Stats />

@@ -17,7 +17,7 @@ type benefitsItem = {
 }
 
 export default function Benefits() {
-    const benefits = [
+    const benefits : benefitsItem[] = [
         {
             title: "รับชำระเงินได้หลากหลาย",
             description: "รองรับบัตรเครดิต บัตรเดบิต และการแตะจ่าย เพิ่มความสะดวกให้ลูกค้า",

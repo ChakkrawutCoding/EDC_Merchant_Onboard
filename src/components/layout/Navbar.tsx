@@ -14,18 +14,18 @@ export default function Navbar() {
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 
                 {/* Left Side */}
-                <div>
+                <div className="flex items-center">
                     {/* Mobile Hamburger */}
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         className="md:hidden"
                         type="button"
                     >
-                        {isMenuOpen ? (
-                            <X className="h-8 w-8 text-gray-700" />
-                        ) : (
-                            <Menu className="h-8 w-8 text-gray-700" />
-                        )}
+                        <>
+                            {!isMenuOpen && (
+                                <Menu className="h-8 w-8 text-gray-700" />
+                            )}
+                        </>
                     </button>
                     {/* Logo */}
                     <div className="hidden md:block">

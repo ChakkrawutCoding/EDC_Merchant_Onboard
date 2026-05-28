@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Hero() {
     return (
@@ -33,11 +34,11 @@ export default function Hero() {
                     </div>
 
                     <div className="text-center">
-                        <p className="inline-flex items-center rounded-full border border-white/60 bg-white/80 px-5 py-2 text-sm font-medium shadow-lg backdrop-blur transition hover:scale-105">
+                        <p className="inline-flex items-center rounded-full border border-white/60 bg-white/80 text-[#121212] px-5 py-2 text-sm font-medium shadow-lg backdrop-blur transition hover:scale-105">
                         เครื่องรูดบัตร EDC
                         </p>
 
-                        <h1 className="mt-6 text-5xl font-bold leading-tight tracking-tight md:text-7xl">
+                        <h1 className="mt-6 text-5xl font-bold leading-tight tracking-tight md:text-7xl text-[#121212]">
                         <span className="text-[#035FC8]">ทุกการจ่าย</span>
                         <br />
                         ง่ายในเครื่องเดียว
@@ -46,10 +47,12 @@ export default function Hero() {
                         <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-gray-900">
                         รองรับบัตร, QR และ e-wallet ในเครื่องเดียว
                         </p>
-
-                        <button className="mt-8 rounded-full bg-blue-600 px-8 py-4 text-base font-semibold text-white shadow-xl transition hover:scale-105 hover:bg-blue-700">
-                        กรอกแบบฟอร์มขอใช้เครื่อง EDC
-                        </button>
+                        
+                        <Link href="/upload">
+                            <button className="mt-8 rounded-full bg-blue-600 px-8 py-4 text-base font-semibold text-white shadow-xl transition hover:scale-105 hover:bg-blue-700">
+                            กรอกแบบฟอร์มขอใช้เครื่อง EDC
+                            </button>
+                        </Link>
                     </div>
 
                     <div className="flex justify-center">
