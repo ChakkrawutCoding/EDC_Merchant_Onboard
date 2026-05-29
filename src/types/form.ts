@@ -19,4 +19,6 @@ export type FormData = {
     zipcode: string;
 
     companyCertificate: UploadedFile | null;
+    citizenIdCard: UploadedFile | null;
+    bankBook: UploadedFile | null;
 };

@@ -1,16 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import { Check } from "lucide-react";
+
 import Navbar from "@/components/layout/Navbar";
 import StepIndicator from "@/components/upload/StepIndicator";
 import BusinessInfoStep from "@/components/upload/steps/BusinessInfoStep";
 import CompanyDocumentStep from "@/components/upload/steps/CompanyDocumentStep";
+import CitizenIdCardStep from "@/components/upload/steps/CitizenIdCardStep";
+import BankBookStep from "@/components/upload/steps/BankBookStep";
 
 import type { FormData } from "@/types/form";
 
 export default function UploadPage() {
     const [currentStep, setCurrentStep] = useState(1);
     const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+
+    const [isSaveToastOpen, setIsSaveToastOpen] = useState(false);
 
     const [formData, setFormData] = useState<FormData>({
         businessName: "",
@@ -26,6 +33,8 @@ export default function UploadPage() {
         zipcode: "",
 
         companyCertificate: null,
+        citizenIdCard: null,
+        bankBook: null,
     });
 
     useEffect(() => {
@@ -68,6 +77,14 @@ export default function UploadPage() {
         );
     };
 
+    const showSaveToast = () => {
+        setIsSaveToastOpen(true);
+
+        setTimeout(() => {
+            setIsSaveToastOpen(false);
+        }, 2000);
+    };
+
     const handleNextStep = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -75,11 +92,25 @@ export default function UploadPage() {
 
         saveDraft(nextStep);
         setCurrentStep(nextStep);
+        showSaveToast();
     };
 
     return (
         <main className="min-h-screen bg-[#EAF5FB]">
             <Navbar />
+
+            <div
+                className={`fixed left-1/2 top-20 z-[1000] w-[min(90vw,720px)] -translate-x-1/2 rounded-md border-2 border-green-500 bg-green-100 px-4 py-2 text-sm font-medium text-green-600 shadow-lg transition-all duration-500 ease-out ${
+                    isSaveToastOpen
+                        ? "translate-y-0 opacity-100"
+                        : "pointer-events-none -translate-y-12 opacity-0"
+                }`}
+            >
+                <div className="flex items-center justify-center gap-3">
+                    <Check className="h-5 w-5 shrink-0 stroke-[3]" />
+                    <span>Auto Saved Complete การบันทึกอัตโนมัติสำเร็จ</span>
+                </div>
+            </div>
 
             <section className="mx-auto max-w-7xl px-6 py-16">
                 <div className="text-center">
@@ -110,6 +141,20 @@ export default function UploadPage() {
                         />
                     )}
 
+                    {currentStep === 3 && (
+                        <CitizenIdCardStep
+                            formData={formData}
+                            setFormData={setFormData}
+                        />
+                    )}
+
+                    {currentStep === 5 && (
+                        <BankBookStep
+                            formData={formData}
+                            setFormData={setFormData}
+                        />
+                    )}
+
                     <div className="mt-10 flex justify-center gap-4">
                         <button
                             onClick={() => {
@@ -117,6 +162,7 @@ export default function UploadPage() {
 
                                 saveDraft(previousStep);
                                 setCurrentStep(previousStep);
+                                showSaveToast();
                             }}
                             disabled={currentStep === 1}
                             

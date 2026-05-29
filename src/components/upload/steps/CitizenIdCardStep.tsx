@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import type { FormData } from "@/types/form";
 
-type CompanyDocumentStepProps = {
+type CitizenIdCardStepProps = {
     formData: FormData;
 
     setFormData: React.Dispatch<
@@ -12,9 +12,9 @@ type CompanyDocumentStepProps = {
     >;
 };
 
-export default function CompanyDocumentStep({ formData, setFormData, } : CompanyDocumentStepProps) {
+export default function CompanyDocumentStep({ formData, setFormData, } : CitizenIdCardStepProps) {
 
-    const companyDocumentExample = "/img/CompanyDocumentExample.png";
+    const idCardExample = "/img/IdCardExample.png";
 
     const [isReadingFile, setIsReadingFile] = useState(false);
     const [readProgress, setReadProgress] = useState(0);
@@ -60,7 +60,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
 
             setFormData((prev) => ({
                 ...prev,
-                companyCertificate: {
+                citizenIdCard: {
                     name: file.name,
                     type: file.type,
                     size: file.size,
@@ -102,7 +102,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                     </div>
                 </div> 
 
-            ) : formData.companyCertificate ? (
+            ) : formData.citizenIdCard ? (
 
                 /* Uploaded State */
                 <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
@@ -114,18 +114,18 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
 
                         <div className="absolute inset-0 z-10" />
 
-                        {formData.companyCertificate?.type?.startsWith("image/") ? (
+                        {formData.citizenIdCard?.type?.startsWith("image/") ? (
 
                             <img
-                                src={formData.companyCertificate.base64}
+                                src={formData.citizenIdCard.base64}
                                 alt="Preview"
                                 className="h-full w-full object-contain"
                             />
 
-                        ) : formData.companyCertificate?.type === "application/pdf" ? (
+                        ) : formData.citizenIdCard?.type === "application/pdf" ? (
 
                             <iframe
-                                src={formData.companyCertificate.base64}
+                                src={formData.citizenIdCard.base64}
                                 className="h-full w-full"
                             />
 
@@ -139,7 +139,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                     <div className="mt-4 flex items-center justify-between">
                         <div>
                             <p className="max-w-[200px] truncate text-sm font-medium text-gray-900">
-                                {formData.companyCertificate.name}
+                                {formData.citizenIdCard.name}
                             </p>
 
                             <div className="mt-1 flex items-center gap-1 text-sm text-green-600">
@@ -200,7 +200,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                     className="mt-4 flex flex-1 items-center cursor-pointer justify-center overflow-hidden rounded-xl bg-gray-100"
                 >
                     <img
-                        src={companyDocumentExample}
+                        src={idCardExample}
                         alt="ตัวอย่างเอกสาร"
                         className="h-full w-full object-contain"
                     />
@@ -218,18 +218,18 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
                     >
 
-                        {formData.companyCertificate?.type?.startsWith("image/") ? (
+                        {formData.citizenIdCard?.type?.startsWith("image/") ? (
 
                             <img
-                                src={formData.companyCertificate.base64}
+                                src={formData.citizenIdCard.base64}
                                 alt="Preview"
                                 className="max-h-[80vh] w-auto object-contain"
                             />
 
-                        ) : formData.companyCertificate?.type === "application/pdf" ? (
+                        ) : formData.citizenIdCard?.type === "application/pdf" ? (
 
                             <iframe
-                                src={formData.companyCertificate.base64}
+                                src={formData.citizenIdCard.base64}
                                 className="h-[80vh] w-[70vw]"
                             />
 
@@ -249,7 +249,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
                     >
                         <img
-                            src={companyDocumentExample}
+                            src={idCardExample}
                             alt="Preview"
                             className="max-h-[80vh] w-auto object-contain"
                         />
