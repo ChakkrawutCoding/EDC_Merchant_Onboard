@@ -88,6 +88,8 @@ export default function UploadPage() {
     const handleNextStep = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (isSaveToastOpen) return;
+
         const nextStep = Math.min(currentStep + 1, 5);
 
         saveDraft(nextStep);
@@ -158,16 +160,18 @@ export default function UploadPage() {
                     <div className="mt-10 flex justify-center gap-4">
                         <button
                             onClick={() => {
+                                if (isSaveToastOpen) return;
+
                                 const previousStep = Math.max(currentStep - 1, 1);
 
                                 saveDraft(previousStep);
                                 setCurrentStep(previousStep);
                                 showSaveToast();
                             }}
-                            disabled={currentStep === 1}
+                            disabled={currentStep === 1 || isSaveToastOpen}
                             
                             className={`rounded-xl px-6 py-3 transition ${
-                                currentStep === 1
+                                currentStep === 1 || isSaveToastOpen
                                     ? "cursor-not-allowed bg-gray-300 text-gray-500"
                                     : "cursor-pointer bg-gray-600 text-white hover:bg-gray-700"
                             }`}
@@ -177,7 +181,12 @@ export default function UploadPage() {
                         </button>
 
                         <button
-                            className="cursor-pointer rounded-xl bg-gray-600 px-6 py-3 text-white"
+                            disabled={isSaveToastOpen}
+                            className={`rounded-xl px-6 py-3 ${
+                                isSaveToastOpen
+                                    ? "cursor-not-allowed bg-gray-300 text-gray-500"
+                                    : "cursor-pointer bg-gray-600 text-white"
+                            }`}
                             type="submit"
                         >
                             ไปหน้าถัดไป
