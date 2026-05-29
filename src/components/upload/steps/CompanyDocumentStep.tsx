@@ -13,29 +13,99 @@ type CompanyDocumentStepProps = {
 };
 
 export default function CompanyDocumentStep({ formData, setFormData, } : CompanyDocumentStepProps) {
-    const handleFileChange = (
+
+    const companyDocumentExample = "/img/CompanyDocumentExample.png";
+
+    const [isReadingFile, setIsReadingFile] = useState(false);
+    const [readProgress, setReadProgress] = useState(0);
+    const [readingFileName, setReadingFileName] = useState("");
+
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isExamplePreviewOpen, setIsExamplePreviewOpen] = useState(false);
+
+    const fileToBase64 = (file: File, onProgress: (loaded: number, total: number) => void): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onprogress = (event) => {
+                if (!event.lengthComputable) return;
+
+                onProgress(event.loaded, event.total);
+            };
+
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+
+            reader.readAsDataURL(file);
+        });
+    };
+    
+    const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const file = event.target.files?.[0];
 
         if (!file) return;
 
-        setFormData((prev) => ({
-            ...prev,
-            companyCertificate: file,
-        }));
+        setIsReadingFile(true);
+        setReadProgress(0);
+        setReadingFileName(file.name);
+
+        try {
+            const base64 = await fileToBase64(file, (loaded, total) => {
+                setReadProgress(Math.round((loaded / total) * 100));
+            });
+
+            await new Promise((r) => setTimeout(r, 10000));
+
+            setFormData((prev) => ({
+                ...prev,
+                companyCertificate: {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    base64,
+                },
+            }));
+        } finally {
+            setIsReadingFile(false);
+        }
     };
 
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
     return (
-        <div className="mt-10 flex justify-center gap-6">
+        <div className="mt-10 flex justify-center gap-12">
 
-            {/* Upload Section */}
-            {formData.companyCertificate ? (
+            {isReadingFile ? (
+                <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
+                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-500 bg-[#F8FBFF] px-8">
+                        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
+
+                        <div className="mt-12 w-full">
+                            <div className="h-3 overflow-hidden rounded-full bg-blue-100">
+                                <div
+                                    className="h-full rounded-full bg-[#0A84E8] transition-all duration-200"
+                                    style={{ width: `${readProgress}%` }}
+                                />
+                            </div>
+
+                            <div className="mt-3 flex justify-between gap-3 text-sm text-gray-900">
+                                <div className="min-w-0">
+                                    <p>กำลังโหลดไฟล์</p>
+                                    <p className="truncate text-gray-500">
+                                        {readingFileName}
+                                    </p>
+                                </div>
+
+                                <span className="shrink-0">{readProgress}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+
+            ) : formData.companyCertificate ? (
 
                 /* Uploaded State */
-                <div className="flex h-[320px] w-[350px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
+                <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
 
                     <div 
                         onClick={() => setIsPreviewOpen(true)}
@@ -47,7 +117,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         {formData.companyCertificate?.type?.startsWith("image/") ? (
 
                             <img
-                                src={URL.createObjectURL(formData.companyCertificate)}
+                                src={formData.companyCertificate.base64}
                                 alt="Preview"
                                 className="h-full w-full object-contain"
                             />
@@ -55,7 +125,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         ) : formData.companyCertificate?.type === "application/pdf" ? (
 
                             <iframe
-                                src={URL.createObjectURL(formData.companyCertificate)}
+                                src={formData.companyCertificate.base64}
                                 className="h-full w-full"
                             />
 
@@ -102,7 +172,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         onChange={handleFileChange}
                     />
 
-                    <div className="flex h-[320px] w-[350px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-400 bg-[#F8FBFF] p-10 text-center transition hover:border-[#0A84E8] hover:bg-blue-50">
+                    <div className="flex h-[440px] w-[490px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-400 bg-[#F8FBFF] p-10 text-center transition hover:border-[#0A84E8] hover:bg-blue-50">
 
                         <FileText className="h-20 w-20 text-gray-700" />
 
@@ -119,17 +189,21 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
             )}
 
             {/* Example Section */}
-            <div className="flex h-[320px] w-[220px] flex-col items-center overflow-hidden rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
+            <div className="flex h-[440px] w-[320px] flex-col items-center overflow-hidden rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
 
                 <h3 className="text-3xl font-bold text-gray-900">
                     ตัวอย่าง
                 </h3>
 
-                <div 
-                    //onClick={() => setIsPreviewOpen(true)}
-                    className="mt-4 flex flex-1 items-center cursor-pointer justify-center rounded-xl bg-gray-100 px-4 text-center text-gray-500"
+                <div
+                    onClick={() => setIsExamplePreviewOpen(true)}
+                    className="mt-4 flex flex-1 items-center cursor-pointer justify-center overflow-hidden rounded-xl bg-gray-100"
                 >
-                    รูปตัวอย่างเอกสาร
+                    <img
+                        src={companyDocumentExample}
+                        alt="ตัวอย่างเอกสาร"
+                        className="h-full w-full object-cover object-top"
+                    />
                 </div>
             </div>
 
@@ -147,7 +221,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         {formData.companyCertificate?.type?.startsWith("image/") ? (
 
                             <img
-                                src={URL.createObjectURL(formData.companyCertificate)}
+                                src={formData.companyCertificate.base64}
                                 alt="Preview"
                                 className="max-h-[80vh] w-auto object-contain"
                             />
@@ -155,11 +229,30 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         ) : formData.companyCertificate?.type === "application/pdf" ? (
 
                             <iframe
-                                src={URL.createObjectURL(formData.companyCertificate)}
+                                src={formData.companyCertificate.base64}
                                 className="h-[80vh] w-[70vw]"
                             />
 
                         ) : null}
+                    </div>
+                </div>
+            )}
+
+            {isExamplePreviewOpen && ( //Pop up Preview kub
+                <div
+                    onClick={() => setIsExamplePreviewOpen(false)}
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
+                >
+
+                    <div
+                        onClick={(event) => event.stopPropagation()}
+                        className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
+                    >
+                        <img
+                            src={companyDocumentExample}
+                            alt="Preview"
+                            className="max-h-[80vh] w-auto object-contain"
+                        />
                     </div>
                 </div>
             )}

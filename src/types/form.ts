@@ -1,3 +1,10 @@
+export type UploadedFile = {
+    name: string;
+    type: string;
+    size: number;
+    base64: string;
+};
+
 export type FormData = {
     businessName: string;
     businessType: string;
@@ -11,5 +18,5 @@ export type FormData = {
     subDistrict: string;
     zipcode: string;
 
-    companyCertificate: File | null;
+    companyCertificate: UploadedFile | null;
 };
