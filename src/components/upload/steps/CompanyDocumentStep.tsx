@@ -56,7 +56,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                 setReadProgress(Math.round((loaded / total) * 100));
             });
 
-            await new Promise((r) => setTimeout(r, 10000));
+            await new Promise((r) => setTimeout(r, 1000));
 
             setFormData((prev) => ({
                 ...prev,

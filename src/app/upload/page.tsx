@@ -10,6 +10,7 @@ import type { FormData } from "@/types/form";
 
 export default function UploadPage() {
     const [currentStep, setCurrentStep] = useState(1);
+    const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
     const [formData, setFormData] = useState<FormData>({
         businessName: "",
@@ -30,13 +31,31 @@ export default function UploadPage() {
     useEffect(() => {
         const draft = localStorage.getItem("edcOnboardingDraft");
 
-        if (!draft) return;
+        if (draft) {
+            const parsed = JSON.parse(draft);
 
-        const parsed = JSON.parse(draft);
+            setFormData((prev) => ({
+                ...prev,
+                ...parsed.formData,
+            }));
+            setCurrentStep(parsed.currentStep);
+        }
 
-        setFormData(parsed.formData);
-        setCurrentStep(parsed.currentStep);
+        setIsDraftLoaded(true);
     }, []);
+
+    useEffect(() => {
+        if (!isDraftLoaded) return;
+
+        localStorage.setItem(
+            "edcOnboardingDraft",
+            JSON.stringify({
+                currentStep,
+                formData,
+                savedAt: new Date().toISOString(),
+            })
+        );
+    }, [currentStep, formData, isDraftLoaded]);
 
     const saveDraft = (step: number) => {
         localStorage.setItem(
