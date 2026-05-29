@@ -14,6 +14,7 @@ export default function UploadPage() {
     const [formData, setFormData] = useState<FormData>({
         businessName: "",
         businessType: "",
+        otherBusinessType: "",
         taxId: "",
         tel: "",
         businessAddress: "",

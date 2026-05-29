@@ -1,6 +1,5 @@
 "use client"
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
 
 import type { FormData } from "@/types/form";
 
@@ -43,12 +42,9 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
         "อื่น ๆ",
     ];
 
-    const [businessType, setBusinessType] = useState("");
-    const [otherBusinessType, setOtherBusinessType] = useState("");
-
-    const [provinceId, setProvinceId] = useState<number | null>(null);
-    const [districtId, setDistrictId] = useState<number | null>(null);
-    const [subDistrictId, setSubDistrictId] = useState<number | null>(null);
+    const provinceId = formData.province ? Number(formData.province) : null;
+    const districtId = formData.district ? Number(formData.district) : null;
+    const subDistrictId = formData.subDistrict ? Number(formData.subDistrict) : null;
 
     const filteredDistricts = districts.filter(
         (district) => district.PROVINCE_ID === provinceId
@@ -81,6 +77,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                     businessName: e.target.value,
                                 }))
                             }
+                            required
                             placeholder="กรุณากรอกชื่อกิจการ"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                         />
@@ -94,14 +91,15 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <div className="relative">
                             <select 
-                                value={businessType}
+                                value={formData.businessType}
                                 onChange={(e) => {
-                                    setBusinessType(e.target.value);
-
-                                    if (e.target.value !== "อื่น ๆ") {
-                                    setOtherBusinessType("");
-                                    }
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        businessType: e.target.value,
+                                        otherBusinessType: e.target.value === "อื่น ๆ" ? prev.otherBusinessType : "",
+                                    }));
                                 }}
+                                required
                                 className="w-full cursor-pointer appearance-none text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
                             >
                                 <option value="">---- กรุณาเลือกประเภทธุรกิจ ----</option>
@@ -124,12 +122,18 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                     </div>
                     
                     {/* In-case อื่น ๆ */}
-                    {businessType === "อื่น ๆ" && (
+                    {formData.businessType === "อื่น ๆ" && (
                         <div className="mt-3">
                             <input
                             type="text"
-                            value={otherBusinessType}
-                            onChange={(e) => setOtherBusinessType(e.target.value)}
+                            value={formData.otherBusinessType}
+                            onChange={(e) => 
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    otherBusinessType: e.target.value,
+                                }))
+                            }
+                            required
                             placeholder="กรุณาระบุประเภทธุรกิจ"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                             />
@@ -144,6 +148,14 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <input
                             type="text"
+                            value={formData.taxId}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                ...prev,
+                                taxId: e.target.value,
+                                }))
+                            }
+                            required
                             placeholder="กรุณากรอกเลขประจำตัวผู้เสียภาษี"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                         />
@@ -157,6 +169,14 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <input
                             type="text"
+                            value={formData.tel}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                ...prev,
+                                tel: e.target.value,
+                                }))
+                            }
+                            required
                             placeholder="กรุณากรอกเบอร์โทรติดต่อ"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                         />
@@ -175,6 +195,14 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <input
                             type="text"
+                            value={formData.businessAddress}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                ...prev,
+                                businessAddress: e.target.value,
+                                }))
+                            }
+                            required
                             placeholder="กรุณากรอกที่อยู่กิจการ"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                         />
@@ -191,6 +219,13 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                             <input
                                 type="text"
+                                value={formData.road}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                    ...prev,
+                                    road: e.target.value,
+                                    }))
+                                }
                                 className="w-full rounded border border-gray-400 text-black bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                             />
                         </div>
@@ -205,13 +240,14 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                 <select
                                     value={provinceId ?? ""}
                                     onChange={(e) => {
-                                        const value = e.target.value;
-                                        setProvinceId(value ? Number(value) : null);
-
-                                        // reset
-                                        setDistrictId(null);
-                                        setSubDistrictId(null);
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            province: e.target.value,
+                                            district: "",
+                                            subDistrict: "",
+                                        }));
                                     }}
+                                    required
                                     className="w-full cursor-pointer appearance-none rounded text-black border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
                                 >
                                     <option value="">กรุณาเลือก</option>
@@ -250,10 +286,13 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                 <select 
                                     value={districtId ?? ""}
                                     onChange={(e) => {
-                                        const value = e.target.value;
-                                        setDistrictId(value ? Number(value) : null);
-                                        setSubDistrictId(null);
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            district: e.target.value,
+                                            subDistrict: "",
+                                        }));
                                     }}
+                                    required
                                     className="w-full cursor-pointer appearance-none text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
                                 >
                                     <option value="">กรุณาเลือก</option>
@@ -296,9 +335,12 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                 <select
                                     value={subDistrictId ?? ""}
                                     onChange={(e) => {
-                                        const value = e.target.value;
-                                        setSubDistrictId(value ? Number(value) : null);
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            subDistrict: e.target.value,
+                                        }));
                                     }}
+                                    required
                                     className="w-full cursor-pointer appearance-none text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
                                 >
                                     <option value="">กรุณาเลือก</option>
@@ -335,6 +377,14 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                             <input
                                 type="text"
+                                value={formData.zipcode}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        zipcode: e.target.value,
+                                    }))
+                                }
+                                required
                                 placeholder="เช่น 00000"
                                 className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
                             />
