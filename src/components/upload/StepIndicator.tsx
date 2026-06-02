@@ -1,3 +1,5 @@
+import { Check } from "lucide-react";
+
 type StepIndicatorProps = {
     currentStep: number;
 };

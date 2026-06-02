@@ -9,6 +9,7 @@ import StepIndicator from "@/components/upload/StepIndicator";
 import BusinessInfoStep from "@/components/upload/steps/BusinessInfoStep";
 import CompanyDocumentStep from "@/components/upload/steps/CompanyDocumentStep";
 import CitizenIdCardStep from "@/components/upload/steps/CitizenIdCardStep";
+import FaceScanStep from "@/components/upload/steps/FaceScanStep";
 import BankBookStep from "@/components/upload/steps/BankBookStep";
 
 import type { FormData } from "@/types/form";
@@ -35,6 +36,8 @@ export default function UploadPage() {
         companyCertificate: null,
         citizenIdCard: null,
         bankBook: null,
+        faceScan: null,
+        faceVerification: null,
     });
 
     useEffect(() => {
@@ -56,25 +59,35 @@ export default function UploadPage() {
     useEffect(() => {
         if (!isDraftLoaded) return;
 
-        localStorage.setItem(
-            "edcOnboardingDraft",
-            JSON.stringify({
-                currentStep,
-                formData,
-                savedAt: new Date().toISOString(),
-            })
-        );
+        try {
+            localStorage.setItem(
+                "edcOnboardingDraft",
+                JSON.stringify({
+                    currentStep,
+                    formData,
+                    savedAt: new Date().toISOString(),
+                })
+            );
+        } catch (error) {
+            console.error("Save draft failed:", error);
+            alert("ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป");
+        }
     }, [currentStep, formData, isDraftLoaded]);
 
     const saveDraft = (step: number) => {
-        localStorage.setItem(
-            "edcOnboardingDraft",
-            JSON.stringify({
-                currentStep: step,
-                formData,
-                savedAt: new Date().toISOString(),
-            })
-        );
+        try {
+            localStorage.setItem(
+                "edcOnboardingDraft",
+                JSON.stringify({
+                    currentStep: step,
+                    formData,
+                    savedAt: new Date().toISOString(),
+                })
+            );
+        } catch (error) {
+            console.error("Save draft failed:", error);
+            alert("ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป");
+        }
     };
 
     const showSaveToast = () => {
@@ -89,6 +102,11 @@ export default function UploadPage() {
         e.preventDefault();
 
         if (isSaveToastOpen) return;
+
+        if (currentStep === 4 && !formData.faceVerification?.matched) {
+            alert("กรุณาสแกนใบหน้าให้ผ่านก่อนดำเนินการต่อ");
+            return;
+        }
 
         const nextStep = Math.min(currentStep + 1, 5);
 
@@ -150,6 +168,13 @@ export default function UploadPage() {
                         />
                     )}
 
+                    {currentStep === 4 && (
+                        <FaceScanStep
+                            formData={formData}
+                            setFormData={setFormData}
+                        />
+                    )}
+
                     {currentStep === 5 && (
                         <BankBookStep
                             formData={formData}
@@ -181,9 +206,9 @@ export default function UploadPage() {
                         </button>
 
                         <button
-                            disabled={isSaveToastOpen}
+                            disabled={isSaveToastOpen || (currentStep === 4 && !formData.faceVerification?.matched)}
                             className={`rounded-xl px-6 py-3 ${
-                                isSaveToastOpen
+                                isSaveToastOpen || (currentStep === 4 && !formData.faceVerification?.matched)
                                     ? "cursor-not-allowed bg-gray-300 text-gray-500"
                                     : "cursor-pointer bg-gray-600 text-white"
                             }`}

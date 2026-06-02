@@ -21,4 +21,10 @@ export type FormData = {
     companyCertificate: UploadedFile | null;
     citizenIdCard: UploadedFile | null;
     bankBook: UploadedFile | null;
+    faceScan: UploadedFile | null;
+    faceVerification: {
+        matched: boolean;
+        score: number;
+        checkedAt: string;
+    } | null;
 };

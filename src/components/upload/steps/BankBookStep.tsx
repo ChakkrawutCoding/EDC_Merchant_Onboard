@@ -16,6 +16,9 @@ export default function CompanyDocumentStep({ formData, setFormData, } : BankBoo
 
     const bankBookExample = "/img/Bankbook.png";
 
+    const MAX_FILE_SIZE_MB = 5;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
     const [isReadingFile, setIsReadingFile] = useState(false);
     const [readProgress, setReadProgress] = useState(0);
     const [readingFileName, setReadingFileName] = useState("");
@@ -46,6 +49,12 @@ export default function CompanyDocumentStep({ formData, setFormData, } : BankBoo
         const file = event.target.files?.[0];
 
         if (!file) return;
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            alert(`ไฟล์ต้องมีขนาดไม่เกิน ${MAX_FILE_SIZE_MB}MB`);
+            event.target.value = "";
+            return;
+        }
 
         setIsReadingFile(true);
         setReadProgress(0);

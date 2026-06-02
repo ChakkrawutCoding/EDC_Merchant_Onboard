@@ -16,6 +16,9 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
 
     const companyDocumentExample = "/img/CompanyDocumentExample.png";
 
+    const MAX_FILE_SIZE_MB = 5;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
     const [isReadingFile, setIsReadingFile] = useState(false);
     const [readProgress, setReadProgress] = useState(0);
     const [readingFileName, setReadingFileName] = useState("");
@@ -47,6 +50,12 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
 
         if (!file) return;
 
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            alert(`ไฟล์ต้องมีขนาดไม่เกิน ${MAX_FILE_SIZE_MB}MB`);
+            event.target.value = "";
+            return;
+        }
+
         setIsReadingFile(true);
         setReadProgress(0);
         setReadingFileName(file.name);
@@ -73,7 +82,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
     };
 
     return (
-        <div className="mt-10 flex justify-center gap-12">
+        <div className="mt-10 flex flex-col items-center justify-center gap-8 lg:flex-row lg:gap-12">
 
             {isReadingFile ? (
                 <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
@@ -181,7 +190,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Company
                         </p>
 
                         <p className="mt-1 text-md text-gray-500">
-                            ไฟล์ขนาดสูงสุด 10MB
+                            ไฟล์ขนาดสูงสุด 5MB
                         </p>
                     </div>
                 </label>
