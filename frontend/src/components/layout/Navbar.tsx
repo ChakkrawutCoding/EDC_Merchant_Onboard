@@ -59,12 +59,12 @@ export default function Navbar() {
                 </nav>
                 
                 {/* Right Side */}
-                <button
+                <Link
+                    href="/login"
                     className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 hover:scale-105 transition"
-                    type="button"
                 >
                     เข้าสู่ระบบ
-                </button>
+                </Link>
             </div>
             
             {/* Mobile Side Bar */}

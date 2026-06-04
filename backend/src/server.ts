@@ -1,9 +1,11 @@
 import "dotenv/config";
+import { connectDatabase } from "./config/database";
 
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+import authRoute from "./routes/auth.route";
 import healthRoute from "./routes/health.route";
 
 const app = express();
@@ -19,6 +21,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 app.use("/health", healthRoute);
+app.use("/auth", authRoute);
 
 app.use((req, res) => {
   res.status(404).json({
@@ -28,6 +31,15 @@ app.use((req, res) => {
 
 const port = process.env.PORT || 4000;
 
-app.listen(port, () => {
-  console.log(`Backend server is running on http://localhost:${port}`);
+async function bootstrap() {
+    await connectDatabase();
+
+    app.listen(port, () => {
+        console.log(`Backend server is running on http://localhost:${port}`);
+    });
+}
+
+bootstrap().catch((error) => {
+    console.error("Failed to start backend server:", error);
+    process.exit(1);
 });
