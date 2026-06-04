@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Check } from "lucide-react";
 
@@ -56,39 +56,30 @@ export default function UploadPage() {
         setIsDraftLoaded(true);
     }, []);
 
+    const saveDraft = useCallback(
+        (step = currentStep, data = formData) => {
+            try {
+                localStorage.setItem(
+                    "edcOnboardingDraft",
+                    JSON.stringify({
+                        currentStep: step,
+                        formData: data,
+                        savedAt: new Date().toISOString(),
+                    })
+                );
+            } catch (error) {
+                console.error("Save draft failed:", error);
+                alert("ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป");
+            }
+        },
+        [currentStep, formData]
+    );
+
     useEffect(() => {
         if (!isDraftLoaded) return;
-
-        try {
-            localStorage.setItem(
-                "edcOnboardingDraft",
-                JSON.stringify({
-                    currentStep,
-                    formData,
-                    savedAt: new Date().toISOString(),
-                })
-            );
-        } catch (error) {
-            console.error("Save draft failed:", error);
-            alert("ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป");
-        }
-    }, [currentStep, formData, isDraftLoaded]);
-
-    const saveDraft = (step: number) => {
-        try {
-            localStorage.setItem(
-                "edcOnboardingDraft",
-                JSON.stringify({
-                    currentStep: step,
-                    formData,
-                    savedAt: new Date().toISOString(),
-                })
-            );
-        } catch (error) {
-            console.error("Save draft failed:", error);
-            alert("ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป");
-        }
-    };
+        
+        saveDraft();
+    }, [isDraftLoaded, saveDraft]);
 
     const showSaveToast = () => {
         setIsSaveToastOpen(true);
@@ -110,7 +101,6 @@ export default function UploadPage() {
 
         const nextStep = Math.min(currentStep + 1, 5);
 
-        saveDraft(nextStep);
         setCurrentStep(nextStep);
         showSaveToast();
     };
@@ -189,7 +179,6 @@ export default function UploadPage() {
 
                                 const previousStep = Math.max(currentStep - 1, 1);
 
-                                saveDraft(previousStep);
                                 setCurrentStep(previousStep);
                                 showSaveToast();
                             }}

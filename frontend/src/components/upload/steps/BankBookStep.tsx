@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import type { FormData } from "@/types/form";
 
-type CitizenIdCardStepProps = {
+type BankBookStepProps = {
     formData: FormData;
 
     setFormData: React.Dispatch<
@@ -12,9 +12,9 @@ type CitizenIdCardStepProps = {
     >;
 };
 
-export default function CompanyDocumentStep({ formData, setFormData, } : CitizenIdCardStepProps) {
+export default function BankBookStep({ formData, setFormData, } : BankBookStepProps) {
 
-    const idCardExample = "/img/IdCardExample.png";
+    const bankBookExample = "/img/Bankbook.png";
 
     const MAX_FILE_SIZE_MB = 5;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -69,7 +69,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
 
             setFormData((prev) => ({
                 ...prev,
-                citizenIdCard: {
+                bankBook: {
                     name: file.name,
                     type: file.type,
                     size: file.size,
@@ -111,7 +111,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
                     </div>
                 </div> 
 
-            ) : formData.citizenIdCard ? (
+            ) : formData.bankBook ? (
 
                 /* Uploaded State */
                 <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
@@ -123,18 +123,18 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
 
                         <div className="absolute inset-0 z-10" />
 
-                        {formData.citizenIdCard?.type?.startsWith("image/") ? (
+                        {formData.bankBook?.type?.startsWith("image/") ? (
 
                             <img
-                                src={formData.citizenIdCard.base64}
+                                src={formData.bankBook.base64}
                                 alt="Preview"
                                 className="h-full w-full object-contain"
                             />
 
-                        ) : formData.citizenIdCard?.type === "application/pdf" ? (
+                        ) : formData.bankBook?.type === "application/pdf" ? (
 
                             <iframe
-                                src={formData.citizenIdCard.base64}
+                                src={formData.bankBook.base64}
                                 className="h-full w-full"
                             />
 
@@ -148,7 +148,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
                     <div className="mt-4 flex items-center justify-between">
                         <div>
                             <p className="max-w-[200px] truncate text-sm font-medium text-gray-900">
-                                {formData.citizenIdCard.name}
+                                {formData.bankBook.name}
                             </p>
 
                             <div className="mt-1 flex items-center gap-1 text-sm text-green-600">
@@ -190,7 +190,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
                         </p>
 
                         <p className="mt-1 text-md text-gray-500">
-                            ไฟล์ขนาดสูงสุด 10MB
+                            ไฟล์ขนาดสูงสุด 5MB
                         </p>
                     </div>
                 </label>
@@ -209,7 +209,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
                     className="mt-4 flex flex-1 items-center cursor-pointer justify-center overflow-hidden rounded-xl bg-gray-100"
                 >
                     <img
-                        src={idCardExample}
+                        src={bankBookExample}
                         alt="ตัวอย่างเอกสาร"
                         className="h-full w-full object-contain"
                     />
@@ -227,18 +227,18 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
                         className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
                     >
 
-                        {formData.citizenIdCard?.type?.startsWith("image/") ? (
+                        {formData.bankBook?.type?.startsWith("image/") ? (
 
                             <img
-                                src={formData.citizenIdCard.base64}
+                                src={formData.bankBook.base64}
                                 alt="Preview"
                                 className="max-h-[80vh] w-auto object-contain"
                             />
 
-                        ) : formData.citizenIdCard?.type === "application/pdf" ? (
+                        ) : formData.bankBook?.type === "application/pdf" ? (
 
                             <iframe
-                                src={formData.citizenIdCard.base64}
+                                src={formData.bankBook.base64}
                                 className="h-[80vh] w-[70vw]"
                             />
 
@@ -258,7 +258,7 @@ export default function CompanyDocumentStep({ formData, setFormData, } : Citizen
                         className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
                     >
                         <img
-                            src={idCardExample}
+                            src={bankBookExample}
                             alt="Preview"
                             className="max-h-[80vh] w-auto object-contain"
                         />

@@ -23,8 +23,8 @@ type VerificationResult = {
 };
 
 export default function FaceScanStep({ formData, setFormData }: FaceScanStepProps) {
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-    const streamRef = useRef<MediaStream | null>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null); //Kept Video Element
+    const streamRef = useRef<MediaStream | null>(null); //Kept Camera Stream
 
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
@@ -32,52 +32,7 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
 
     const hasPassedVerification = formData.faceVerification?.matched === true;
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const startCamera = async () => {
-            if (!navigator.mediaDevices?.getUserMedia) {
-                setCameraError("เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง");
-                return;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "user",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                    },
-                    audio: false,
-                });
-
-                if (!isMounted) {
-                    stream.getTracks().forEach((track) => track.stop());
-                    return;
-                }
-
-                streamRef.current = stream;
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    await videoRef.current.play();
-                    setIsCameraReady(true);
-                }
-            } catch (error) {
-                console.error("Start camera failed:", error);
-                setCameraError("ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการใช้งานกล้อง");
-            }
-        };
-
-        startCamera();
-
-        return () => {
-            isMounted = false;
-            streamRef.current?.getTracks().forEach((track) => track.stop());
-        };
-    }, []);
-
-    const dataUrlSize = (dataUrl: string) => {
+    const dataUrlSize = (dataUrl: string) => { //ใช้คำนวณขนาดไฟล์จาก Base64
         const base64 = dataUrl.split(",")[1] ?? "";
         return Math.round((base64.length * 3) / 4);
     };
@@ -91,16 +46,75 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
         };
     };
 
-    const handleCapture = async () => {
-        if (!videoRef.current || !isCameraReady || isVerifying) return;
+    const stopCamera = () => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.srcObject = null;
+        }
 
-        if (!formData.citizenIdCard) {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+
+        setIsCameraReady(false);
+    };
+
+    const startCamera = async () => {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            setCameraError("เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง");
+            return;
+        }
+
+        try {
+            setCameraError("");
+            stopCamera();
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "user",
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                },
+                audio: false,
+            });
+
+            streamRef.current = stream;
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+
+                try {
+                    await videoRef.current.play();
+                    setIsCameraReady(true);
+                } catch (error) {
+                    console.warn("Video play was interrupted:", error);
+                }
+            }
+        } catch (error) {
+            console.error("Start camera failed:", error);
+            setCameraError("ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการใช้งานกล้อง");
+        }
+    };
+
+    useEffect(() => {
+        if (!formData.faceScan) {
+            startCamera();
+        }
+
+        return () => {
+            stopCamera();
+        };
+    }, [formData.faceScan]);
+    
+    const handleCapture = async () => { //กดปุ่ม สแกนใบหน้า จะเข้าตัวนี้
+        if (!videoRef.current || !isCameraReady || isVerifying) return; //ไม่มี Video, กล้องยังไม่พร้อม, กำลังตรวจอยู่ 
+
+        if (!formData.citizenIdCard) { //เช็คอัปโหลดบัตรประชาชนหรือยัง
             alert("กรุณาอัปโหลดบัตรประชาชนในขั้นตอนที่ 3 ก่อนสแกนใบหน้า");
             return;
         }
 
         const video = videoRef.current;
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement("canvas"); //สร้าง Canvas
 
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -109,9 +123,9 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
 
         if (!context) return;
 
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        context.drawImage(video, 0, 0, canvas.width, canvas.height); //แคปภาพจาก Webcam ใส่ลง Canvas
 
-        const base64 = canvas.toDataURL("image/jpeg", 0.92);
+        const base64 = canvas.toDataURL("image/jpeg", 0.92); //แปลงเป็น Base64
 
         setIsVerifying(true);
 
@@ -132,6 +146,13 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
                     checkedAt: new Date().toISOString(),
                 },
             }));
+
+            if (result.matched) {
+                stopCamera();
+            }
+        } catch (error) {
+            console.error("Face verification failed:", error);
+            alert("ตรวจสอบใบหน้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
         } finally {
             setIsVerifying(false);
         }
@@ -248,3 +269,31 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
         </div>
     );
 }
+
+/*  Flow
+
+    เปิดหน้า
+        ↓
+    useEffect ทำงาน
+        ↓
+    เปิด Webcam
+        ↓
+    Video แสดงภาพ
+        ↓
+    กด "สแกนใบหน้า"
+        ↓
+    Capture รูปจาก Video
+        ↓
+    Canvas
+        ↓
+    Base64
+        ↓
+    ส่ง API Face Match
+        ↓
+    ได้ผลลัพธ์
+        ↓
+    เก็บใน formData
+        ↓
+    แสดงผลผ่าน / ไม่ผ่าน
+    
+*/
