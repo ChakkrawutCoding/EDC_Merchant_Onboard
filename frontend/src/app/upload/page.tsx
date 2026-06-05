@@ -89,10 +89,34 @@ export default function UploadPage() {
         }, 2000);
     };
 
+    const isBusinessInfoValid = () => {
+        const isOtherBusinessTypeRequired = formData.businessType === "อื่น ๆ";
+
+        return (
+            formData.businessName.trim() !== "" && //ชื่อกิจการไม่ว่าง
+            formData.businessType.trim() !== "" && //เลือกประเภทธุรกิจแล้ว
+            (!isOtherBusinessTypeRequired || formData.otherBusinessType.trim() !== "") &&
+            //ถ้าไม่ได้เลือก อื่น ๆ ผ่านเลย แต่ถ้าเลือกต้องกรอกช่อง otherBusinessType แล้ว
+            formData.taxId.length === 13 && //Tax ID 13 หลักพอดี
+            formData.tel.length >= 9 && formData.tel.length <= 10 &&
+            //เบอร์โทร 9-10 หลัก
+            formData.businessAddress.trim() !== "" && //ที่อยู่กิจการไม่ว่าง
+            formData.province.trim() !== "" && //เลือก จังหวัด แล้ว
+            formData.district.trim() !== "" && //เลือก เขต/อำเภอ แล้ว
+            formData.subDistrict.trim() !== "" && //เลือก แขวง/ตำบล แล้ว
+            formData.zipcode.length === 5 //รหัสไปรษณีย์ มี 5 หลักพอดี
+        );
+    };
+
     const handleNextStep = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (isSaveToastOpen) return;
+
+        if (currentStep === 1 && !isBusinessInfoValid()) {
+            alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
+            return;
+        }
 
         if (currentStep === 4 && !formData.faceVerification?.matched) {
             alert("กรุณาสแกนใบหน้าให้ผ่านก่อนดำเนินการต่อ");

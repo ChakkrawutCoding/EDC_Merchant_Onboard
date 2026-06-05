@@ -3,9 +3,12 @@ import { ChevronDown } from "lucide-react";
 
 import type { FormData } from "@/types/form";
 
+import { useState } from "react";
+
 import provinces from "@/data/provinces.json";
 import districts from "@/data/districts.json";
 import subDistricts from "@/data/subDistricts.json";
+import { div } from "framer-motion/client";
 
 type BusinessInfoStepProps = {
     formData: FormData;
@@ -46,6 +49,17 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
     const districtId = formData.district ? Number(formData.district) : null;
     const subDistrictId = formData.subDistrict ? Number(formData.subDistrict) : null;
 
+    const [telError, setTelError] = useState("");
+    const [taxIdError, setTaxIdError] = useState("");
+    const [zipcodeError, setZipcodeError] = useState("");
+    
+    const BUSINESS_NAME_MAX_LENGTH = 255;
+    const BUSINESS_TYPE_NAME_MAX_LENGTH = 100;
+    const TAX_ID_MAX_LENGTH = 13;
+    const BUSINESS_ADDRESS_MAX_LENGTH = 255;
+    const ROAD_MAX_LENGTH = 100;
+    const ZIPCODE_MAX_LENGTH = 5;
+
     const filteredDistricts = districts.filter(
         (district) => district.PROVINCE_ID === provinceId
     );
@@ -64,19 +78,33 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                     {/* ชื่อกิจการ */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-900">
-                            ชื่อกิจการ <span className="text-red-500">*</span>
-                        </label>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <label className="block text-sm font-medium text-gray-900">
+                                ชื่อกิจการ <span className="text-red-500">*</span>
+                            </label>
+
+                            <span
+                                className={`text-xs ${
+                                    formData.businessName.length >= BUSINESS_NAME_MAX_LENGTH
+                                        ? "text-red-500"
+                                        : "text-gray-500"
+                                }`}
+                            >
+                                {formData.businessName.length}/{BUSINESS_NAME_MAX_LENGTH}
+                            </span>
+                        </div>
+
 
                         <input
                             type="text"
+                            maxLength={BUSINESS_NAME_MAX_LENGTH}
                             value={formData.businessName}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     businessName: e.target.value,
                                 }))
-                            }
+                            }}
                             required
                             placeholder="กรุณากรอกชื่อกิจการ"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
@@ -123,63 +151,128 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                     
                     {/* In-case อื่น ๆ */}
                     {formData.businessType === "อื่น ๆ" && (
-                        <div className="mt-3">
-                            <input
-                            type="text"
-                            value={formData.otherBusinessType}
-                            onChange={(e) => 
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    otherBusinessType: e.target.value,
-                                }))
-                            }
-                            required
-                            placeholder="กรุณาระบุประเภทธุรกิจ"
-                            className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
-                            />
+                        <div>
+                            <div className="mb-2 flex justify-end">
+                                <label
+                                        className={`text-xs ${
+                                            formData.otherBusinessType.length >= BUSINESS_TYPE_NAME_MAX_LENGTH
+                                                ? "text-red-500"
+                                                : "text-gray-500"
+                                        }`}
+                                    >
+                                        {formData.otherBusinessType.length}/{BUSINESS_TYPE_NAME_MAX_LENGTH}
+                                </label>
+                            </div>
+
+                            <div className="mt-3">
+                                <input
+                                type="text"
+                                maxLength={BUSINESS_TYPE_NAME_MAX_LENGTH}
+                                value={formData.otherBusinessType}
+                                onChange={(e) => 
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        otherBusinessType: e.target.value,
+                                    }))
+                                }
+                                required
+                                placeholder="กรุณาระบุประเภทธุรกิจ"
+                                className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                                />
+                            </div>
                         </div>
                     )}
 
                     {/* เลขประจำตัวผู้เสียภาษี */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-900">
-                            เลขประจำตัวผู้เสียภาษี (Tax ID) <span className="text-red-500">*</span>
-                        </label>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <label className="block text-sm font-medium text-gray-900">
+                                เลขประจำตัวผู้เสียภาษี (Tax ID) <span className="text-red-500">*</span>
+                            </label>
+
+                            <span
+                                className="text-xs text-gray-500"
+                            >
+                                {formData.taxId.length}/{TAX_ID_MAX_LENGTH}
+                            </span>
+                        </div>
+                        
 
                         <input
                             type="text"
                             value={formData.taxId}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                                const rawValue = e.target.value;
+                                const onlyNumbers = rawValue.replace(/\D/g, "");
+                                if (rawValue !== onlyNumbers) {
+                                    setTaxIdError("กรอกเฉพาะตัวเลขเท่านั้น");
+                                } else if (onlyNumbers.length < 13) {
+                                    setTaxIdError(`กรุณากรอกเลขประจำตัวผู้เสียภาษีให้ครบ ${TAX_ID_MAX_LENGTH} หลัก`);
+                                } else {
+                                    setTaxIdError("");
+                                }
+
                                 setFormData((prev) => ({
-                                ...prev,
-                                taxId: e.target.value,
+                                    ...prev,
+                                    taxId: onlyNumbers.slice(0, TAX_ID_MAX_LENGTH),
                                 }))
-                            }
+                            }}
                             required
                             placeholder="กรุณากรอกเลขประจำตัวผู้เสียภาษี"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                         />
+
+                        {taxIdError && (
+                            <p className="mt-1 text-xs text-red-500">
+                                {taxIdError}
+                            </p>
+                        )}
                     </div>
 
                     {/* เบอร์โทรติดต่อ */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-900">
-                            เบอร์โทรติดต่อ <span className="text-red-500">*</span>
-                        </label>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <label className="block text-sm font-medium text-gray-900">
+                                เบอร์โทรติดต่อ <span className="text-red-500">*</span>
+                            </label>
+
+                            <span
+                                className="text-xs text-gray-500"
+                            >
+                                {formData.tel.length}/10
+                            </span>
+                        </div>
+
 
                         <input
                             type="text"
                             value={formData.tel}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                                const rawValue = e.target.value;
+                                const onlyNumbers = rawValue.replace(/\D/g, "");
+                                if (rawValue !== onlyNumbers) {
+                                    setTelError("กรอกเฉพาะตัวเลขเท่านั้น");
+                                } else if (onlyNumbers.length < 9) {
+                                    setTelError(`กรุณากรอกเบอร์ติดต่อ 9-10 หลัก`);
+                                } else {
+                                    setTelError("");
+                                }
+
                                 setFormData((prev) => ({
-                                ...prev,
-                                tel: e.target.value,
+                                    ...prev,
+                                    tel: onlyNumbers.slice(0, 10),
                                 }))
-                            }
+                            }}
                             required
                             placeholder="กรุณากรอกเบอร์โทรติดต่อ"
                             className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
                         />
+
+                        {telError && (
+                            <p className="mt-1 text-xs text-red-500">
+                                {telError}
+                            </p>
+                        )}
                     </div>
                 </div>
 
@@ -189,12 +282,25 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                     {/* ที่อยู่กิจการ */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-900">
-                            ที่อยู่กิจการ <span className="text-red-500">*</span>
-                        </label>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <label className="block text-sm font-medium text-gray-900">
+                                ที่อยู่กิจการ <span className="text-red-500">*</span>
+                            </label>
 
+                            <span
+                                className={`text-xs ${
+                                    formData.businessAddress.length >= BUSINESS_ADDRESS_MAX_LENGTH
+                                        ? "text-red-500"
+                                        : "text-gray-500"
+                                }`}
+                            >
+                                {formData.businessAddress.length}/{BUSINESS_ADDRESS_MAX_LENGTH}
+                            </span>
+                        </div>
+                        
                         <input
                             type="text"
+                            maxLength={BUSINESS_ADDRESS_MAX_LENGTH}
                             value={formData.businessAddress}
                             onChange={(e) =>
                                 setFormData((prev) => ({
@@ -213,12 +319,26 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         {/* ถนน */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">
-                                ถนน
-                            </label>
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                                <label className="block text-sm font-medium text-gray-900">
+                                    ถนน
+                                </label>
+
+                                <span
+                                    className={`text-xs ${
+                                        formData.road.length >= ROAD_MAX_LENGTH
+                                            ? "text-red-500"
+                                            : "text-gray-500"
+                                    }`}
+                                >
+                                    {formData.road.length}/{ROAD_MAX_LENGTH}
+                                </span>
+                            </div>
+                            
 
                             <input
                                 type="text"
+                                maxLength={ROAD_MAX_LENGTH}
                                 value={formData.road}
                                 onChange={(e) =>
                                     setFormData((prev) => ({
@@ -371,23 +491,46 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         {/* รหัสไปรษณีย์ */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">
-                                รหัสไปรษณีย์ <span className="text-red-500">*</span>
-                            </label>
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                                <label className="block text-sm font-medium text-gray-900">
+                                    รหัสไปรษณีย์ <span className="text-red-500">*</span>
+                                </label>
 
+                                <span
+                                    className="text-xs text-gray-500"
+                                >
+                                    {formData.zipcode.length}/{ZIPCODE_MAX_LENGTH}
+                                </span>
+                            </div>
+                            
                             <input
                                 type="text"
                                 value={formData.zipcode}
-                                onChange={(e) =>
+                                onChange={(e) => {
+                                    const rawValue = e.target.value;
+                                    const onlyNumbers = rawValue.replace(/\D/g, "");
+                                    if (rawValue !== onlyNumbers) {
+                                        setZipcodeError("กรอกเฉพาะตัวเลขเท่านั้น");
+                                    } else if (onlyNumbers.length < ZIPCODE_MAX_LENGTH) {
+                                        setZipcodeError("กรุณากรอกรหัสไปรษณีย์ 5 หลัก");
+                                    } else {
+                                        setZipcodeError("");
+                                    }
                                     setFormData((prev) => ({
                                         ...prev,
-                                        zipcode: e.target.value,
+                                        zipcode: onlyNumbers.slice(0, ZIPCODE_MAX_LENGTH),
                                     }))
-                                }
+                                }}
                                 required
                                 placeholder="เช่น 00000"
                                 className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
                             />
+
+                            {zipcodeError && (
+                                <p className="mt-1 text-xs text-red-500">
+                                    {zipcodeError}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
