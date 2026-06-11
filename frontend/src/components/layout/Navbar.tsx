@@ -5,9 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { user, loading } = useAuth();
     
     return (
         <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
@@ -59,12 +61,26 @@ export default function Navbar() {
                 </nav>
                 
                 {/* Right Side */}
-                <Link
-                    href="/login"
-                    className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 hover:scale-105 transition"
-                >
-                    เข้าสู่ระบบ
-                </Link>
+                {loading ? (
+                    <div className="h-10 w-28 rounded-full bg-gray-100" />
+                ) : user ? (
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href="/logout"
+                            className="max-w-[180px] truncate rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:scale-105 hover:bg-blue-700"
+                            title={user.name}
+                        >
+                            {user.name}
+                        </Link>
+                    </div>
+                    ) : (
+                    <Link
+                        href="/login"
+                        className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:scale-105 hover:bg-blue-700"
+                    >
+                        เข้าสู่ระบบ
+                    </Link>
+                )}
             </div>
             
             {/* Mobile Side Bar */}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
 
 const ibmThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],
@@ -22,7 +23,7 @@ export default function RootLayout({
       <body
         className={ibmThai.className}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

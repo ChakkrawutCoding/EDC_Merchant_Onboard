@@ -2,11 +2,11 @@ import { Schema, model, models, type InferSchemaType } from "mongoose";
 
 const userSchema = new Schema(
   {
-    name: {
+    cognitoSub: {
       type: String,
       required: true,
-      trim: true,
-      maxlength: 120,
+      unique: true,
+      index: true,
     },
 
     email: {
@@ -19,9 +19,32 @@ const userSchema = new Schema(
       maxlength: 255,
     },
 
-    passwordHash: {
+    firstName: {
       type: String,
       required: true,
+      trim: true,
+      maxlength: 120,
+    },
+
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 120,
+    },
+    
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 241,
+    },
+
+    provider: {
+      type: String,
+      enum: ["email", "google"],
+      required: true,
+      default: "email",
     },
   },
   {
