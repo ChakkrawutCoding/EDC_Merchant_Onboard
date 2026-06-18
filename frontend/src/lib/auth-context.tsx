@@ -40,20 +40,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function fetchUser() {
         try {
-        const data = await apiRequest<{ user: AuthUser }>("/auth/me");
-        setUser(data.user);
+            const data = await apiRequest<{ user: AuthUser }>("/auth/me");
+            setUser(data.user);
         } catch {
-        setUser(null);
+            setUser(null);
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     }
 
     async function logout() {
         try {
-        await apiRequest("/auth/logout", { method: "POST" });
+            await apiRequest("/auth/logout", { method: "POST" });
         } finally {
-        setUser(null);
+            setUser(null);
         }
     }
 

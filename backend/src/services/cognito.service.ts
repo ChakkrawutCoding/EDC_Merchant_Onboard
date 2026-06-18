@@ -30,6 +30,10 @@ function assertCognitoEnv() { //Check if anything missing
 }
 
 //ทำ SecretHash
+/*
+    HMAC_SHA256(username + clientId, clientSecret)
+    แล้วแปลงเป็น base64
+*/
 function computeSecretHash(username: string): string {
     assertCognitoEnv();
 

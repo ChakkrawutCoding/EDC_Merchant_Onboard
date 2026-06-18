@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 
 import authRoute from "./routes/auth.route";
 import healthRoute from "./routes/health.route";
+import formsRoute from "./routes/forms.route";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(cookieParser());
 
 app.use("/health", healthRoute);
 app.use("/auth", authRoute);
+app.use("/forms", formsRoute);
 
 app.use((req, res) => {
   res.status(404).json({

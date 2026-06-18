@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 import { Check, Play } from "lucide-react";
 
@@ -23,6 +24,9 @@ import type { FormData } from "@/types/form";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function UploadPage() {
+    const router = useRouter();
+    const { user, loading } = useAuth();
+
     const [currentStep, setCurrentStep] = useState(1);
     const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
@@ -181,8 +185,27 @@ export default function UploadPage() {
     );
 
     const canSubmitSummary = isInfoConfirmed && isRuleAccepted;
-    const router = useRouter();
+    
 
+    useEffect(() => {
+        if (!loading && !user) {
+            router.replace("/login");
+        }
+    }, [loading, user, router]);
+
+    if (loading || !user) {
+        return (
+            <main className="min-h-screen bg-[#EAF5FB]">
+            <Navbar />
+
+                <section className="flex min-h-[calc(100vh-73px)] items-center justify-center px-6">
+                    <p className="text-center text-gray-600">
+                        กำลังตรวจสอบสิทธิ์...
+                    </p>
+                </section>
+            </main>
+        );
+    } else {
     return (
         <main className="min-h-screen bg-[#EAF5FB]">
             <Navbar />
@@ -528,4 +551,5 @@ export default function UploadPage() {
             </AnimatePresence>
         </main>
     );
+    }
 }
