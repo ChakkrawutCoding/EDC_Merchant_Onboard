@@ -75,7 +75,7 @@ async function upsertUserFromIdToken(idToken: string) {
             provider: "email",
         },
         {
-            new: true,
+            returnDocument: "after",
             upsert: true,
             setDefaultsOnInsert: true,
         }

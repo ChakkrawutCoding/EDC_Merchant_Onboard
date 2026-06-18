@@ -1,5 +1,7 @@
 "use client";
 
+import { apiUpload } from "@/lib/api";
+
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -23,6 +25,18 @@ import subDistricts from "@/data/subDistricts.json";
 import type { FormData } from "@/types/form";
 import { motion, AnimatePresence } from "framer-motion";
 
+function dataUrlToFile(dataUrl: string, filename: string, mimeType: string) {
+    const [, data] = dataUrl.split(",");
+    const binary = atob(data);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+
+    return new File([bytes], filename, { type: mimeType });
+}
+
 export default function UploadPage() {
     const router = useRouter();
     const { user, loading } = useAuth();
@@ -36,6 +50,8 @@ export default function UploadPage() {
 
     const [isInfoConfirmed, setIsInfoConfirmed] = useState(false);
     const [isRuleAccepted, setIsRuleAccepted] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [appAlert, setAppAlert] = useState<{
         message: string;
@@ -52,6 +68,10 @@ export default function UploadPage() {
             setAppAlert(null);
         }, 3000);
     };
+
+    function wait(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
 
     const [formData, setFormData] = useState<FormData>({
         businessName: "",
@@ -74,6 +94,8 @@ export default function UploadPage() {
     });
 
     useEffect(() => {
+        if (loading || !user) return;
+
         const draft = localStorage.getItem("edcOnboardingDraft");
 
         if (draft) {
@@ -109,7 +131,7 @@ export default function UploadPage() {
     );
 
     useEffect(() => {
-        if (!isDraftLoaded) return;
+        if (!user || !isDraftLoaded) return;
         
         saveDraft();
     }, [isDraftLoaded, saveDraft]);
@@ -192,6 +214,89 @@ export default function UploadPage() {
             router.replace("/login");
         }
     }, [loading, user, router]);
+
+    async function submitApplication() {
+        if (isSubmitting) return;
+
+        if (!formData.companyCertificate || !formData.citizenIdCard || !formData.bankBook) {
+            showAlert("กรุณาอัปโหลดเอกสารให้ครบถ้วน", "warning");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const fd = new FormData();
+
+            fd.append("businessName", formData.businessName);
+            fd.append("businessType", formData.businessType);
+            fd.append("otherBusinessType", formData.otherBusinessType);
+            fd.append("taxId", formData.taxId);
+            fd.append("tel", formData.tel);
+            fd.append("businessAddress", formData.businessAddress);
+            fd.append("road", formData.road);
+            fd.append("province", formData.province);
+            fd.append("district", formData.district);
+            fd.append("subDistrict", formData.subDistrict);
+            fd.append("zipcode", formData.zipcode);
+
+            fd.append(
+                "faceVerification",
+                JSON.stringify(formData.faceVerification ?? { matched: false, score: 0 })
+            );
+
+            fd.append(
+                "companyCertificate",
+                dataUrlToFile(
+                    formData.companyCertificate.base64,
+                    formData.companyCertificate.name,
+                    formData.companyCertificate.type
+                )
+            );
+
+            fd.append(
+                "citizenIdCard",
+                dataUrlToFile(
+                    formData.citizenIdCard.base64,
+                    formData.citizenIdCard.name,
+                    formData.citizenIdCard.type
+                )
+            );
+
+            fd.append(
+                "bankBook",
+                dataUrlToFile(
+                    formData.bankBook.base64,
+                    formData.bankBook.name,
+                    formData.bankBook.type
+                )
+            );
+
+            if (formData.faceScan) {
+                fd.append(
+                    "faceScan",
+                    dataUrlToFile(
+                    formData.faceScan.base64,
+                    formData.faceScan.name,
+                    formData.faceScan.type
+                    )
+                );
+            }
+
+            await apiUpload("/forms", fd);
+
+            localStorage.removeItem("edcOnboardingDraft");
+
+            showAlert("ส่งเอกสารเรียบร้อย", "success");
+
+            await wait(1000);
+            router.push("/status");
+        } catch (error) {
+            showAlert(error instanceof Error ? error.message : "ส่งเอกสารไม่สำเร็จ", "danger");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     if (loading || !user) {
         return (
@@ -517,21 +622,16 @@ export default function UploadPage() {
                                         <div className="mt-8 flex justify-end">
                                             <button
                                                 type="button"
-                                                disabled={!canSubmitSummary}
-                                                onClick={() => {
-                                                    showAlert("ส่งเอกสารเรียบร้อย", "success");
-                                                    setTimeout(() => {
-                                                        router.push("/status");
-                                                    }, 1000);
-                                                }}
+                                                disabled={!canSubmitSummary || isSubmitting}
+                                                onClick={submitApplication}
                                                 className={`flex items-center gap-2 rounded-lg px-5 py-2 text-white transition ${
-                                                    canSubmitSummary
+                                                    canSubmitSummary && !isSubmitting
                                                         ? "cursor-pointer bg-blue-600 hover:bg-blue-700"
                                                         : "cursor-not-allowed bg-gray-300 text-gray-500"
                                                 }`}
                                             >
                                                 <Play className="h-4 w-4 fill-current" />
-                                                ยืนยันการส่งเอกสาร
+                                                {isSubmitting ? "กำลังส่งเอกสาร..." : "ยืนยันการส่งเอกสาร"}
                                             </button>
                                         </div>
                                     </motion.div>
