@@ -28,9 +28,9 @@ export default function LoginPage() {
       await apiRequest("/auth/login", {
         method: "POST",
         body: JSON.stringify({
-          email,
+          email: email.trim().toLowerCase(),
           password,
-        }),
+        }), 
       });
 
       await refresh();

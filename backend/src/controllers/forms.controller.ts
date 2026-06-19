@@ -75,9 +75,9 @@ export async function submitForm(req: AuthRequest, res: Response) {
         const bankBook = getUploadedFile(files, "bankBook");
         const faceScan = getUploadedFile(files, "faceScan");
 
-        if (!companyCertificate || !citizenIdCard || !bankBook) {
+        if (!companyCertificate || !citizenIdCard || !bankBook || !faceScan) {
             return res.status(400).json({
-                message: "Company certificate, citizen ID card, and bank book are required",
+                message: "Company certificate, citizen ID card, bank book, and face scan are required",
             });
         }
 
@@ -130,7 +130,7 @@ export async function submitForm(req: AuthRequest, res: Response) {
                 companyCertificate: storedCompanyCertificate,
                 citizenIdCard: storedCitizenIdCard,
                 bankBook: storedBankBook,
-                ...(storedFaceScan ? { faceScan: storedFaceScan } : {}),
+                faceScan: storedFaceScan,
             },
 
             faceVerification: parseFaceVerification(req.body.faceVerification),

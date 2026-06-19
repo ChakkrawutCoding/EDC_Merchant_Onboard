@@ -109,7 +109,7 @@ export default function UploadPage() {
         }
 
         setIsDraftLoaded(true);
-    }, []);
+    }, [loading, user]);
 
     const saveDraft = useCallback(
         (step = currentStep, data = formData) => {
@@ -218,7 +218,12 @@ export default function UploadPage() {
     async function submitApplication() {
         if (isSubmitting) return;
 
-        if (!formData.companyCertificate || !formData.citizenIdCard || !formData.bankBook) {
+        if (
+            !formData.companyCertificate ||
+            !formData.citizenIdCard ||
+            !formData.bankBook ||
+            !formData.faceScan
+        ) {
             showAlert("กรุณาอัปโหลดเอกสารให้ครบถ้วน", "warning");
             return;
         }
@@ -272,16 +277,14 @@ export default function UploadPage() {
                 )
             );
 
-            if (formData.faceScan) {
-                fd.append(
-                    "faceScan",
-                    dataUrlToFile(
+            fd.append(
+                "faceScan",
+                dataUrlToFile(
                     formData.faceScan.base64,
                     formData.faceScan.name,
                     formData.faceScan.type
-                    )
-                );
-            }
+                )
+            );
 
             await apiUpload("/forms", fd);
 

@@ -144,7 +144,7 @@ const formSchema = new Schema(
 
             faceScan: {
                 type: uploadedFileSchema,
-                required: false,
+                required: true,
             },
         },
 

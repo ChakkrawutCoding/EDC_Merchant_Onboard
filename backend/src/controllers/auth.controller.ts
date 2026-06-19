@@ -64,22 +64,34 @@ async function upsertUserFromIdToken(idToken: string) {
     const lastName = String(payload.family_name || "");
     const name = `${firstName} ${lastName}`.trim() || email;
 
-    return UserModel.findOneAndUpdate(
-        { cognitoSub: payload.sub },
-        {
+    const existingUser = await UserModel.findOne({
+        $or: [
+            { cognitoSub: payload.sub },
+            { email },
+        ],
+    });
+
+    if (existingUser) {
+        existingUser.set({
             cognitoSub: payload.sub,
             email,
             firstName,
             lastName,
             name,
             provider: "email",
-        },
-        {
-            returnDocument: "after",
-            upsert: true,
-            setDefaultsOnInsert: true,
-        }
-    );
+        });
+
+        return existingUser.save();
+    }
+
+    return UserModel.create({
+        cognitoSub: payload.sub,
+        email,
+        firstName,
+        lastName,
+        name,
+        provider: "email",
+    });
 }
 
 function toPublicUser(user: {
