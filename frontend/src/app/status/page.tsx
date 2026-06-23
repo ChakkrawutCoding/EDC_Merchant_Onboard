@@ -2,7 +2,8 @@
 
 import Navbar from "@/components/layout/Navbar";
 
-import { useEffect } from "react";
+import { apiRequest } from "@/lib/api";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
@@ -11,9 +12,9 @@ export default function StatusPage() {
     const { user, loading } = useAuth();
 
     useEffect(() => {
-            if (!loading && !user) {
-                router.replace("/login");
-            }
+        if (!loading && !user) {
+            router.replace("/login");
+        }
     }, [loading, user, router]);
     
     if (loading || !user) {

@@ -2,6 +2,12 @@
 
 import { apiUpload } from "@/lib/api";
 
+import {
+    clearOnboardingDraft,
+    getOnboardingDraft,
+    saveOnboardingDraft,
+} from "@/lib/onboarding-draft-db";
+
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -96,35 +102,38 @@ export default function UploadPage() {
     useEffect(() => {
         if (loading || !user) return;
 
-        const draft = localStorage.getItem("edcOnboardingDraft");
+        async function loadDraft() {
+            const draft = await getOnboardingDraft();
 
-        if (draft) {
-            const parsed = JSON.parse(draft);
-
-            setFormData((prev) => ({
-                ...prev,
-                ...parsed.formData,
+            if (draft) {
+                setFormData((prev) => ({
+                    ...prev,
+                    ...draft.formData,
             }));
-            setCurrentStep(parsed.currentStep);
+
+            setCurrentStep(draft.currentStep);
+            }
+
+            setIsDraftLoaded(true);
         }
 
-        setIsDraftLoaded(true);
+        void loadDraft();
     }, [loading, user]);
 
     const saveDraft = useCallback(
-        (step = currentStep, data = formData) => {
+        async (step = currentStep, data = formData) => {
             try {
-                localStorage.setItem(
-                    "edcOnboardingDraft",
-                    JSON.stringify({
-                        currentStep: step,
-                        formData: data,
-                        savedAt: new Date().toISOString(),
-                    })
-                );
+                await saveOnboardingDraft({
+                    currentStep: step,
+                    formData: data,
+                    savedAt: new Date().toISOString(),
+            });
             } catch (error) {
                 console.error("Save draft failed:", error);
-                showAlert("ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป", "warning");
+                showAlert(
+                    "ไม่สามารถบันทึกข้อมูลชั่วคราวได้ อาจเป็นเพราะไฟล์มีขนาดใหญ่เกินไป",
+                    "warning"
+                );
             }
         },
         [currentStep, formData]
@@ -133,8 +142,8 @@ export default function UploadPage() {
     useEffect(() => {
         if (!user || !isDraftLoaded) return;
         
-        saveDraft();
-    }, [isDraftLoaded, saveDraft]);
+        void saveDraft();
+    }, [user, isDraftLoaded, saveDraft]);
 
     const showSaveToast = () => {
         setIsSaveToastOpen(true);
@@ -288,7 +297,7 @@ export default function UploadPage() {
 
             await apiUpload("/forms", fd);
 
-            localStorage.removeItem("edcOnboardingDraft");
+            await clearOnboardingDraft();
 
             showAlert("ส่งเอกสารเรียบร้อย", "success");
 
