@@ -6,6 +6,7 @@ import {
     cognitoSignUp,
     cognitoConfirmSignUp,
     cognitoLogin,
+    cognitoRefreshTokens,
     cognitoGlobalSignOut,
     cognitoResendConfirmationCode,
 } from "../services/cognito.service";
@@ -13,6 +14,7 @@ import {
 const ACCESS_TOKEN_COOKIE = "accessToken";
 const ID_TOKEN_COOKIE = "idToken";
 const REFRESH_TOKEN_COOKIE = "refreshToken";
+const AUTH_USERNAME_COOKIE = "authUsername";
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
@@ -26,7 +28,8 @@ function setTokenCookies(
         accessToken: string;
         idToken: string;
         refreshToken: string;
-    }
+    },
+    username: string
 ) {
     res.cookie(ACCESS_TOKEN_COOKIE, tokens.accessToken, {
         ...COOKIE_OPTIONS,
@@ -42,12 +45,36 @@ function setTokenCookies(
         ...COOKIE_OPTIONS,
         maxAge: 30 * 24 * 60 * 60 * 1000,
     });
+
+    res.cookie(AUTH_USERNAME_COOKIE, username, {
+        ...COOKIE_OPTIONS,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+}
+
+function setAccessCookies(
+    res: Response,
+    tokens: {
+        accessToken: string;
+        idToken: string;
+    }
+) {
+    res.cookie(ACCESS_TOKEN_COOKIE, tokens.accessToken, {
+        ...COOKIE_OPTIONS,
+        maxAge: 60 * 60 * 1000,
+    });
+
+    res.cookie(ID_TOKEN_COOKIE, tokens.idToken, {
+        ...COOKIE_OPTIONS,
+        maxAge: 60 * 60 * 1000,
+    });
 }
 
 function clearTokenCookies(res: Response) {
     res.clearCookie(ACCESS_TOKEN_COOKIE, COOKIE_OPTIONS);
     res.clearCookie(ID_TOKEN_COOKIE, COOKIE_OPTIONS);
     res.clearCookie(REFRESH_TOKEN_COOKIE, COOKIE_OPTIONS);
+    res.clearCookie(AUTH_USERNAME_COOKIE, COOKIE_OPTIONS);
 }
 
 const idVerifier = CognitoJwtVerifier.create({
@@ -187,13 +214,16 @@ export async function login(req: Request, res: Response) {
                 message: "Email and password are required",
             });
         }
-
+        const normalizedEmail = String(email).toLowerCase();
         const tokens = await cognitoLogin(
-            String(email).toLowerCase(),
+            normalizedEmail,
             String(password)
         );
 
-        setTokenCookies(res, tokens);
+        const payload = await idVerifier.verify(tokens.idToken);
+        const authUsername = String(payload["cognito:username"] || payload.sub);
+
+        setTokenCookies(res, tokens, authUsername);
 
         const user = await upsertUserFromIdToken(tokens.idToken);
 
@@ -232,6 +262,38 @@ export async function getMe(req: Request, res: Response) {
     } catch {
         return res.status(401).json({
             user: null,
+        });
+    }
+}
+
+export async function refresh(req: Request, res: Response) {
+    try {
+        const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
+        const username = req.cookies?.[AUTH_USERNAME_COOKIE];
+
+        if (!refreshToken || !username) {
+            return res.status(401).json({
+                message: "Refresh token is missing",
+            });
+        }
+
+        const tokens = await cognitoRefreshTokens(
+            String(username),
+            String(refreshToken)
+        );
+
+        setAccessCookies(res, tokens);
+
+        const user = await upsertUserFromIdToken(tokens.idToken);
+
+        return res.json({
+            user: toPublicUser(user),
+        });
+    } catch (error) {
+        clearTokenCookies(res);
+
+        return res.status(401).json({
+            message: error instanceof Error ? error.message : "Refresh failed",
         });
     }
 }

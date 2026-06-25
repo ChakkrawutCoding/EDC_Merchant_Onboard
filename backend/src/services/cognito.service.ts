@@ -89,6 +89,11 @@ export type CognitoTokens = {
     refreshToken: string;
 };
 
+export type RefreshedCognitoTokens = {
+    accessToken: string;
+    idToken: string;
+};
+
 export async function cognitoLogin(
     email: string,
     password: string
@@ -117,6 +122,35 @@ export async function cognitoLogin(
         accessToken: result.AccessToken,
         idToken: result.IdToken,
         refreshToken: result.RefreshToken,
+    };
+}
+
+export async function cognitoRefreshTokens(
+    email: string,
+    refreshToken: string
+): Promise<RefreshedCognitoTokens> {
+    assertCognitoEnv();
+
+    const response = await client.send(
+        new InitiateAuthCommand({
+            AuthFlow: "REFRESH_TOKEN_AUTH",
+            ClientId: CLIENT_ID!,
+            AuthParameters: {
+                REFRESH_TOKEN: refreshToken,
+                SECRET_HASH: computeSecretHash(email),
+            },
+        })
+    );
+
+    const result = response.AuthenticationResult;
+
+    if (!result?.AccessToken || !result.IdToken) {
+        throw new Error("Cognito refresh did not return tokens");
+    }
+
+    return {
+        accessToken: result.AccessToken,
+        idToken: result.IdToken,
     };
 }
 

@@ -1,18 +1,40 @@
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
 
+async function refreshSession() {
+    const response = await fetch(`${BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+    });
+
+    return response.ok;
+}
+
 export async function apiRequest<T = unknown>(
     path: string,
     options?: RequestInit
 ): Promise<T> {
-    const response = await fetch(`${BASE}${path}`, {
+    const requestOptions: RequestInit = {
         ...options,
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...options?.headers },
-    })
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+        },
+    };
+
+    let response = await fetch(`${BASE}${path}`, requestOptions);
+
+    if (response.status === 401 && path !== "/auth/refresh") {
+        const refreshed = await refreshSession();
+
+        if (refreshed) {
+            response = await fetch(`${BASE}${path}`, requestOptions);
+        }
+    }
 
     if (!response.ok) {
-        const body = await response.json().catch(() => ({ error: 'Request failed' }))
-        throw new Error(body.error ?? `HTTP ${response.status}`)
+        const body = await response.json().catch(() => ({ message: "Request failed" }));
+        throw new Error(body.message ?? body.error ?? `HTTP ${response.status}`)
     }
 
     return response.json() as Promise<T>
@@ -22,18 +44,31 @@ export async function apiUpload<T = unknown>(
     path: string,
     formData: FormData
 ): Promise<T> {
-    const response = await fetch(`${BASE}${path}`, {
-        method: 'POST',
-        credentials: 'include',
+    const requestOptions: RequestInit = {
+        method: "POST",
+        credentials: "include",
         body: formData,
-    })
+    };
 
-    if (!response.ok) {
-        const body = await response.json().catch(() => ({ error: 'Upload failed' }))
-        throw new Error(body.error ?? `HTTP ${response.status}`)
+    let response = await fetch(`${BASE}${path}`, requestOptions);
+
+    if (response.status === 401) {
+        const refreshed = await refreshSession();
+
+        if (refreshed) {
+            response = await fetch(`${BASE}${path}`, requestOptions);
+        }
     }
 
-    return response.json() as Promise<T>
+    if (!response.ok) {
+        const body = await response
+            .json()
+            .catch(() => ({ message: "Upload failed" }));
+
+        throw new Error(body.message ?? body.error ?? `HTTP ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
 }
 
 /*
