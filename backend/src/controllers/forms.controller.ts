@@ -180,6 +180,18 @@ export async function listForms(req: AuthRequest, res: Response) {
                 district: form.district,
                 subDistrict: form.subDistrict,
                 zipcode: form.zipcode,
+                review: {
+                    info:
+                        form.review?.info ?? { status: "pending", note: "" },
+                    companyCertificate:
+                        form.review?.companyCertificate ?? { status: "pending", note: "" },
+                    citizenIdCard:
+                        form.review?.citizenIdCard ?? { status: "pending", note: "" },
+                    faceScan:
+                        form.review?.faceScan ?? { status: "pending", note: "" },
+                    bankBook:
+                        form.review?.bankBook ?? { status: "pending", note: "" },
+                },
                 submittedAt: form.submittedAt,
                 updatedAt: form.updatedAt,
             })),

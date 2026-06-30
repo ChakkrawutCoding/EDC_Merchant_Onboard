@@ -2,6 +2,8 @@
 
 import Navbar from "@/components/layout/Navbar";
 
+import Link from "next/link";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ClipboardX, Clock3, BookOpenText, Pencil } from "lucide-react";
 
@@ -22,7 +24,10 @@ const reviewSteps = [
     { key: "bankBook", label: "สมุดเงินฝากธนาคาร" },
 ];
 
-const documentLinks = [
+const documentLinks: Array<{
+    key: DocumentReviewKey;
+    label: string;
+}> = [
     { key: "companyCertificate", label: "หนังสือรับรองบริษัท" },
     { key: "citizenIdCard", label: "บัตรประชาชน" },
     { key: "faceScan", label: "สแกนใบหน้า" },
@@ -110,17 +115,45 @@ function getSubDistrictName(subDistrictId: string) {
     );
 }
 
-function getStepDotClass(status: FormStatus, index: number) { //Mockup ไว้ก่อน
+function getReviewDotClass(status: ReviewStatus) {
     if (status === "approved") return "bg-green-400";
-    if (status === "rejected") return index === 0 ? "bg-green-400" : "bg-red-400";
-    if (status === "under_review") return index === 0 ? "bg-green-400" : "bg-gray-200";
-    if (status === "editing") return "bg-blue-400";
+    if (status === "rejected") return "bg-red-400";
 
     return "bg-gray-200";
 }
 
+function getReviewStatusLabel(status: ReviewStatus) {
+    if (status === "approved") return "ผ่าน";
+    if (status === "rejected") return "ไม่ผ่าน";
+
+    return "ยังไม่ตรวจ";
+}
+
+function getReviewTextClass(status: ReviewStatus) {
+    if (status === "approved") return "text-green-600";
+    if (status === "rejected") return "text-red-600";
+
+    return "text-gray-500";
+}
+
+function getReviewStatusByIndex(form: FormItem, index: number): ReviewStatus {
+    const reviewStatusByIndex = [
+        form.review.info.status,
+        form.review.companyCertificate.status,
+        form.review.citizenIdCard.status,
+        form.review.faceScan.status,
+        form.review.bankBook.status,
+    ];
+
+    return reviewStatusByIndex[index] ?? "pending";
+}
+
 function getFormFileUrl(formId: string, fileKey: string) {
     return `${API_BASE}/forms/${formId}/files/${fileKey}`;
+}
+
+function canEditForm(form: FormItem) {
+    return form.status === "rejected" || form.status === "editing";
 }
 
 type FormStatus = "editing" | "pending" | "under_review" | "approved" | "rejected";
@@ -139,9 +172,32 @@ type FormItem = {
     district: string;
     subDistrict: string;
     zipcode: string;
+    review: FormReview;
     submittedAt: string;
     updatedAt: string;
 };
+
+type ReviewStatus = "pending" | "approved" | "rejected";
+
+type ReviewItem = {
+    status: ReviewStatus;
+    note?: string;
+    reviewedAt?: string;
+};
+
+type FormReview = {
+    info: ReviewItem;
+    companyCertificate: ReviewItem;
+    citizenIdCard: ReviewItem;
+    faceScan: ReviewItem;
+    bankBook: ReviewItem;
+};
+
+type DocumentReviewKey =
+    | "companyCertificate"
+    | "citizenIdCard"
+    | "faceScan"
+    | "bankBook";
 
 export default function StatusPage() {
     const router = useRouter();
@@ -231,7 +287,7 @@ export default function StatusPage() {
                                     <div className="mx-auto max-w-sm space-y-6">
                                         <div className="grid grid-cols-[1fr_120px_1fr] items-start">
                                         <div className="flex flex-col items-center">
-                                            <div className={`h-5 w-5 rounded-full ${getStepDotClass(form.status, 0)}`} />
+                                            <div className={`h-5 w-5 rounded-full ${getReviewDotClass(getReviewStatusByIndex(form, 0))}`} />
                                             <p className="mt-2 text-center text-[10px] font-semibold leading-tight text-white">
                                             {reviewSteps[0].label}
                                             </p>
@@ -240,7 +296,7 @@ export default function StatusPage() {
                                         <div className="mt-2 h-1 rounded-full bg-gray-500" />
 
                                         <div className="flex flex-col items-center">
-                                            <div className={`h-5 w-5 rounded-full ${getStepDotClass(form.status, 1)}`} />
+                                            <div className={`h-5 w-5 rounded-full ${getReviewDotClass(getReviewStatusByIndex(form, 1))}`} />
                                             <p className="mt-2 text-center text-[10px] font-semibold leading-tight text-white">
                                             {reviewSteps[1].label}
                                             </p>
@@ -249,7 +305,7 @@ export default function StatusPage() {
 
                                         <div className="grid grid-cols-[1fr_72px_1fr_72px_1fr] items-start">
                                         <div className="flex flex-col items-center">
-                                            <div className={`h-5 w-5 rounded-full ${getStepDotClass(form.status, 2)}`} />
+                                            <div className={`h-5 w-5 rounded-full ${getReviewDotClass(getReviewStatusByIndex(form, 2))}`} />
                                             <p className="mt-2 text-center text-[10px] font-semibold leading-tight text-white">
                                             {reviewSteps[2].label}
                                             </p>
@@ -258,7 +314,7 @@ export default function StatusPage() {
                                         <div className="mt-2 h-1 rounded-full bg-gray-500" />
 
                                         <div className="flex flex-col items-center">
-                                            <div className={`h-5 w-5 rounded-full ${getStepDotClass(form.status, 3)}`} />
+                                            <div className={`h-5 w-5 rounded-full ${getReviewDotClass(getReviewStatusByIndex(form, 3))}`} />
                                             <p className="mt-2 text-center text-[10px] font-semibold leading-tight text-white">
                                             {reviewSteps[3].label}
                                             </p>
@@ -267,7 +323,7 @@ export default function StatusPage() {
                                         <div className="mt-2 h-1 rounded-full bg-gray-500" />
 
                                         <div className="flex flex-col items-center">
-                                            <div className={`h-5 w-5 rounded-full ${getStepDotClass(form.status, 4)}`} />
+                                            <div className={`h-5 w-5 rounded-full ${getReviewDotClass(getReviewStatusByIndex(form, 4))}`} />
                                             <p className="mt-2 text-center text-[10px] font-semibold leading-tight text-white">
                                             {reviewSteps[4].label}
                                             </p>
@@ -355,11 +411,20 @@ export default function StatusPage() {
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 text-right">
+                                        <div className="mt-4 flex justify-end gap-6">
+                                            {canEditForm(form) && (
+                                                <Link
+                                                    href={`/upload?formId=${form.id}&mode=edit`}
+                                                    className="text-xl font-bold text-[#0A9FE8] underline underline-offset-2"
+                                                >
+                                                    แก้ไขข้อมูล
+                                                </Link>
+                                            )}
+
                                             <button
-                                            type="button"
-                                            onClick={() => setSelectedForm(form)}
-                                            className="text-xl font-bold text-[#0A9FE8] underline underline-offset-2"
+                                                type="button"
+                                                onClick={() => setSelectedForm(form)}
+                                                className="text-xl font-bold text-[#0A9FE8] underline underline-offset-2"
                                             >
                                                 รายละเอียด
                                             </button>
@@ -372,24 +437,32 @@ export default function StatusPage() {
                                         <div className="absolute bottom-2 top-2 w-1 rounded-full bg-gray-500" />
 
                                         {reviewSteps.map((step, index) => (
-                                            <div
+                                        <div
                                             key={step.key}
-                                            className={`relative z-10 h-5 w-5 rounded-full ${getStepDotClass(
-                                                form.status,
-                                                index
+                                            className={`relative z-10 h-5 w-5 rounded-full ${getReviewDotClass(
+                                                getReviewStatusByIndex(form, index)
                                             )}`}
-                                            />
+                                        />
                                         ))}
                                         </div>
                                     </aside>
 
                                     <aside className="hidden bg-[#EAF5FB] py-5 pl-4 text-sm md:block">
                                         <div className="flex h-full min-h-[160px] flex-col justify-between">
-                                        {reviewSteps.map((step) => (
-                                            <p key={step.key} className="text-gray-600 font-semibold">
-                                                {step.label}
-                                            </p>
-                                        ))}
+                                        {reviewSteps.map((step, index) => {
+                                            const reviewStatus = getReviewStatusByIndex(form, index);
+
+                                            return (
+                                                <div key={step.key}>
+                                                    <p className="font-semibold text-gray-600">
+                                                        {step.label}
+                                                    </p>
+                                                    <p className={`text-xs font-semibold ${getReviewTextClass(reviewStatus)}`}>
+                                                        {getReviewStatusLabel(reviewStatus)}
+                                                    </p>
+                                                </div>
+                                            );
+                                        })}
                                         </div>
                                     </aside>
                                 </article>
@@ -432,13 +505,24 @@ export default function StatusPage() {
                                 </p>
                                 </div>
 
-                                <button
-                                type="button"
-                                onClick={() => setSelectedForm(null)}
-                                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-                                >
-                                ปิด
-                                </button>
+                                <div className="flex items-center gap-4">
+                                    {canEditForm(selectedForm) && (
+                                        <Link
+                                            href={`/upload?formId=${selectedForm.id}&mode=edit`}
+                                            className="text-sm font-bold text-[#0A9FE8] underline underline-offset-2"
+                                        >
+                                            แก้ไขข้อมูล
+                                        </Link>
+                                    )}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedForm(null)}
+                                        className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                                    >
+                                        ปิด
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -531,17 +615,47 @@ export default function StatusPage() {
                                 </h3>
 
                                 <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                                    {documentLinks.map((document) => (
-                                    <a
-                                        key={document.key}
-                                        href={getFormFileUrl(selectedForm.id, document.key)}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="rounded-lg border border-blue-200 bg-white px-4 py-3 text-sm font-semibold text-[#0A84E8] transition hover:border-blue-400 hover:bg-blue-50"
-                                    >
-                                        เปิด : {document.label}
-                                    </a>
-                                    ))}
+                                    {documentLinks.map((document) => {
+                                        const reviewStatus = selectedForm.review[document.key].status;
+
+                                        return (
+                                            <div
+                                                key={document.key}
+                                                className="rounded-lg border border-blue-100 bg-white p-4"
+                                            >
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-900">
+                                                            {document.label}
+                                                        </p>
+
+                                                        <p
+                                                            className={`mt-1 text-xs font-semibold ${getReviewTextClass(
+                                                                reviewStatus
+                                                            )}`}
+                                                        >
+                                                            {getReviewStatusLabel(reviewStatus)}
+                                                        </p>
+
+                                                        {selectedForm.review[document.key].note && (
+                                                            <p className="mt-2 text-sm text-gray-500">
+                                                                {selectedForm.review[document.key].note}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <a
+                                                        href={getFormFileUrl(selectedForm.id, document.key)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                                                    >
+                                                        เปิดเอกสาร
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                             </motion.div>

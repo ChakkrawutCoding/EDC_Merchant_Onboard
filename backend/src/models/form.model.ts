@@ -7,6 +7,11 @@ export type FormStatus =
     | "approved"
     | "rejected";
 
+export type ReviewStatus =
+    | "pending"
+    | "approved"
+    | "rejected";
+
 const uploadedFileSchema = new Schema(
     {
         fileId: {
@@ -29,6 +34,31 @@ const uploadedFileSchema = new Schema(
         size: {
             type: Number,
             required: true,
+        },
+    },
+    {
+        _id: false,
+    }
+);
+
+const reviewItemSchema = new Schema(
+    {
+        status: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+            required: true,
+        },
+
+        note: {
+            type: String,
+            trim: true,
+            maxlength: 500,
+            default: "",
+        },
+
+        reviewedAt: {
+            type: Date,
         },
     },
     {
@@ -145,6 +175,33 @@ const formSchema = new Schema(
             faceScan: {
                 type: uploadedFileSchema,
                 required: true,
+            },
+        },
+
+        review: {
+            info: {
+                type: reviewItemSchema,
+                default: () => ({}),
+            },
+
+            companyCertificate: {
+                type: reviewItemSchema,
+                default: () => ({}),
+            },
+
+            citizenIdCard: {
+                type: reviewItemSchema,
+                default: () => ({}),
+            },
+
+            faceScan: {
+                type: reviewItemSchema,
+                default: () => ({}),
+            },
+
+            bankBook: {
+                type: reviewItemSchema,
+                default: () => ({}),
             },
         },
 
