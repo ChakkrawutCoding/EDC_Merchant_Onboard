@@ -10,9 +10,11 @@ type CitizenIdCardStepProps = {
     setFormData: React.Dispatch<
         React.SetStateAction<FormData>
     >;
+
+    disabled?: boolean;
 };
 
-export default function CitizenIdCardStep({ formData, setFormData, } : CitizenIdCardStepProps) {
+export default function CitizenIdCardStep({ formData, setFormData, disabled = false, } : CitizenIdCardStepProps) {
 
     const idCardExample = "/img/IdCardExample.png";
 
@@ -46,6 +48,11 @@ export default function CitizenIdCardStep({ formData, setFormData, } : CitizenId
     const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
+        if (disabled) {
+            event.target.value = "";
+            return;
+        }
+
         const file = event.target.files?.[0];
 
         if (!file) return;
@@ -82,10 +89,10 @@ export default function CitizenIdCardStep({ formData, setFormData, } : CitizenId
     };
 
     return (
-        <div className="mt-10 flex justify-center gap-12">
+        <div className="mt-10 flex flex-col items-center justify-center gap-8 lg:flex-row lg:gap-12">
 
             {isReadingFile ? (
-                <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
+                <div className="flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
                     <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-500 bg-[#F8FBFF] px-8">
                         <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
 
@@ -114,7 +121,7 @@ export default function CitizenIdCardStep({ formData, setFormData, } : CitizenId
             ) : formData.citizenIdCard ? (
 
                 /* Uploaded State */
-                <div className="flex h-[440px] w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
+                <div className="flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
 
                     <div 
                         onClick={() => setIsPreviewOpen(true)}
@@ -157,11 +164,18 @@ export default function CitizenIdCardStep({ formData, setFormData, } : CitizenId
                             </div>
                         </div>
 
-                        <label className="cursor-pointer text-sm font-medium text-[#0A84E8] hover:underline">
+                        <label
+                            className={`text-sm font-medium ${
+                                disabled
+                                    ? "cursor-not-allowed text-gray-400"
+                                    : "cursor-pointer text-[#0A84E8] hover:underline"
+                            }`}
+                        >
                             อัปโหลด
 
                             <input
                                 type="file"
+                                disabled={disabled}
                                 accept=".pdf,.jpg,.jpeg,.png"
                                 hidden
                                 onChange={handleFileChange}
@@ -173,15 +187,22 @@ export default function CitizenIdCardStep({ formData, setFormData, } : CitizenId
             ) : (
 
                 /* Empty Upload State */
-                <label className="cursor-pointer">
+                <label className={disabled ? "cursor-not-allowed" : "cursor-pointer"}>
                     <input
                         type="file"
+                        disabled={disabled}
                         accept=".pdf,.jpg,.jpeg,.png"
                         hidden
                         onChange={handleFileChange}
                     />
 
-                    <div className="flex h-[440px] w-[490px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-400 bg-[#F8FBFF] p-10 text-center transition hover:border-[#0A84E8] hover:bg-blue-50">
+                    <div
+                        className={`flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-400 bg-[#F8FBFF] p-10 text-center transition ${
+                            disabled
+                                ? "opacity-50"
+                                : "hover:border-[#0A84E8] hover:bg-blue-50"
+                        }`}
+                    >
 
                         <FileText className="h-20 w-20 text-gray-700" />
 
@@ -198,7 +219,7 @@ export default function CitizenIdCardStep({ formData, setFormData, } : CitizenId
             )}
 
             {/* Example Section */}
-            <div className="flex h-[440px] w-[320px] flex-col items-center overflow-hidden rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
+            <div className="flex h-[440px] w-full max-w-[320px] lg:w-[320px] flex-col items-center overflow-hidden rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
 
                 <h3 className="text-3xl font-bold text-gray-900">
                     ตัวอย่าง

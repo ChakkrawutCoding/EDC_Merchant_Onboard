@@ -42,10 +42,12 @@ export async function apiRequest<T = unknown>(
 
 export async function apiUpload<T = unknown>(
     path: string,
-    formData: FormData
+    formData: FormData,
+    options?: RequestInit
 ): Promise<T> {
     const requestOptions: RequestInit = {
         method: "POST",
+        ...options,
         credentials: "include",
         body: formData,
     };

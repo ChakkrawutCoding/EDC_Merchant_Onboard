@@ -3,9 +3,11 @@ import multer from "multer";
 
 import { authMiddleware } from "../middleware/auth.middleware";
 import {
-  getFormFile,
-  listForms,
-  submitForm,
+    getFormFile,
+    listForms,
+    submitForm,
+    getFormDetail,
+    resubmitForm,
 } from "../controllers/forms.controller";
 
 const router = Router();
@@ -27,6 +29,8 @@ const formFiles = upload.fields([
 
 router.post("/", authMiddleware, formFiles, submitForm);
 router.get("/", authMiddleware, listForms);
+router.patch("/:formId/resubmit", authMiddleware, formFiles, resubmitForm);
+router.get("/:formId", authMiddleware, getFormDetail);
 router.get("/:formId/files/:fileKey", authMiddleware, getFormFile);
 
 export default router;

@@ -16,9 +16,11 @@ type BusinessInfoStepProps = {
     setFormData: React.Dispatch<
         React.SetStateAction<FormData>
     >;
+
+    disabled?: boolean;
 };
 
-export default function BusinessInfoStep({ formData, setFormData, }: BusinessInfoStepProps) {
+export default function BusinessInfoStep({ formData, setFormData, disabled = false, }: BusinessInfoStepProps) {
 
     const businessTypes = [
         "ร้านอาหาร / คาเฟ่",
@@ -68,6 +70,18 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
         (subDistrict) => subDistrict.DISTRICT_ID === districtId
     );
 
+    const inputClass = `w-full rounded border border-gray-400 px-3 py-2 text-sm outline-none placeholder:text-gray-400 ${
+        disabled
+            ? "cursor-not-allowed bg-gray-100 text-gray-500"
+            : "bg-white text-black focus:border-[#0A84E8]"
+    }`;
+
+    const selectClass = `w-full appearance-none rounded border border-gray-400 px-3 py-2 pr-10 text-sm outline-none ${
+        disabled
+            ? "cursor-not-allowed bg-gray-100 text-gray-500"
+            : "cursor-pointer bg-white text-black focus:border-[#0A84E8]"
+    }`;
+
     return (
         <div className="mt-12 rounded-2xl border border-gray-300 bg-[#F8FBFF] p-8 shadow-sm">
             <div className="grid gap-8 md:grid-cols-2">
@@ -97,6 +111,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <input
                             type="text"
+                            disabled={disabled}
                             maxLength={BUSINESS_NAME_MAX_LENGTH}
                             value={formData.businessName}
                             onChange={(e) => {
@@ -107,7 +122,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                             }}
                             required
                             placeholder="กรุณากรอกชื่อกิจการ"
-                            className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                            className={inputClass}
                         />
                     </div>
 
@@ -119,6 +134,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <div className="relative">
                             <select 
+                                disabled={disabled}
                                 value={formData.businessType}
                                 onChange={(e) => {
                                     setFormData((prev) => ({
@@ -128,7 +144,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                     }));
                                 }}
                                 required
-                                className="w-full cursor-pointer appearance-none text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
+                                className={selectClass}
                             >
                                 <option value="">---- กรุณาเลือกประเภทธุรกิจ ----</option>
 
@@ -167,6 +183,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                             <div className="mt-3">
                                 <input
                                 type="text"
+                                disabled={disabled}
                                 maxLength={BUSINESS_TYPE_NAME_MAX_LENGTH}
                                 value={formData.otherBusinessType}
                                 onChange={(e) => 
@@ -177,7 +194,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                 }
                                 required
                                 placeholder="กรุณาระบุประเภทธุรกิจ"
-                                className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                                className={inputClass}
                                 />
                             </div>
                         </div>
@@ -200,6 +217,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <input
                             type="text"
+                            disabled={disabled}
                             value={formData.taxId}
                             onChange={(e) => {
                                 const rawValue = e.target.value;
@@ -219,7 +237,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                             }}
                             required
                             placeholder="กรุณากรอกเลขประจำตัวผู้เสียภาษี"
-                            className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                            className={inputClass}
                         />
 
                         {taxIdError && (
@@ -246,6 +264,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                         <input
                             type="text"
+                            disabled={disabled}
                             value={formData.tel}
                             onChange={(e) => {
                                 const rawValue = e.target.value;
@@ -265,7 +284,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                             }}
                             required
                             placeholder="กรุณากรอกเบอร์โทรติดต่อ"
-                            className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                            className={inputClass}
                         />
 
                         {telError && (
@@ -300,6 +319,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                         
                         <input
                             type="text"
+                            disabled={disabled}
                             maxLength={BUSINESS_ADDRESS_MAX_LENGTH}
                             value={formData.businessAddress}
                             onChange={(e) =>
@@ -310,7 +330,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                             }
                             required
                             placeholder="กรุณากรอกที่อยู่กิจการ"
-                            className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                            className={inputClass}
                         />
                     </div>
 
@@ -338,6 +358,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                             <input
                                 type="text"
+                                disabled={disabled}
                                 maxLength={ROAD_MAX_LENGTH}
                                 value={formData.road}
                                 onChange={(e) =>
@@ -346,7 +367,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                     road: e.target.value,
                                     }))
                                 }
-                                className="w-full rounded border border-gray-400 text-black bg-white px-3 py-2 text-sm outline-none focus:border-[#0A84E8]"
+                                className={inputClass}
                             />
                         </div>
 
@@ -358,6 +379,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                             <div className="relative">
                                 <select
+                                    disabled={disabled}
                                     value={provinceId ?? ""}
                                     onChange={(e) => {
                                         setFormData((prev) => ({
@@ -368,7 +390,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                         }));
                                     }}
                                     required
-                                    className="w-full cursor-pointer appearance-none rounded text-black border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
+                                    className={selectClass}
                                 >
                                     <option value="">กรุณาเลือก</option>
 
@@ -404,6 +426,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                             <div className="relative">
                                 <select 
+                                    disabled={disabled}
                                     value={districtId ?? ""}
                                     onChange={(e) => {
                                         setFormData((prev) => ({
@@ -413,7 +436,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                         }));
                                     }}
                                     required
-                                    className="w-full cursor-pointer appearance-none text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
+                                    className={selectClass}
                                 >
                                     <option value="">กรุณาเลือก</option>
 
@@ -453,6 +476,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
 
                             <div className="relative">
                                 <select
+                                    disabled={disabled}
                                     value={subDistrictId ?? ""}
                                     onChange={(e) => {
                                         setFormData((prev) => ({
@@ -461,7 +485,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                         }));
                                     }}
                                     required
-                                    className="w-full cursor-pointer appearance-none text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
+                                    className={selectClass}
                                 >
                                     <option value="">กรุณาเลือก</option>
                                     
@@ -505,6 +529,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                             
                             <input
                                 type="text"
+                                disabled={disabled}
                                 value={formData.zipcode}
                                 onChange={(e) => {
                                     const rawValue = e.target.value;
@@ -523,7 +548,7 @@ export default function BusinessInfoStep({ formData, setFormData, }: BusinessInf
                                 }}
                                 required
                                 placeholder="เช่น 00000"
-                                className="w-full placeholder:text-gray-400 text-black rounded border border-gray-400 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-[#0A84E8]"
+                                className={inputClass}
                             />
 
                             {zipcodeError && (

@@ -15,6 +15,8 @@ import type { FormData } from "@/types/form";
 type FaceScanStepProps = {
     formData: FormData;
     setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+
+    disabled?: boolean;
 };
 
 type VerificationResult = {
@@ -22,7 +24,7 @@ type VerificationResult = {
     score: number;
 };
 
-export default function FaceScanStep({ formData, setFormData }: FaceScanStepProps) {
+export default function FaceScanStep({ formData, setFormData, disabled = false, }: FaceScanStepProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null); //Kept Video Element
     const streamRef = useRef<MediaStream | null>(null); //Kept Camera Stream
 
@@ -59,6 +61,8 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
     };
 
     const startCamera = async () => {
+        if (disabled) return;
+
         if (!navigator.mediaDevices?.getUserMedia) {
             setCameraError("เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง");
             return;
@@ -96,17 +100,17 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
     };
 
     useEffect(() => {
-        if (!formData.faceScan) {
+        if (!disabled && !formData.faceScan) {
             startCamera();
         }
 
         return () => {
             stopCamera();
         };
-    }, [formData.faceScan]);
+    }, [disabled, formData.faceScan]);
     
     const handleCapture = async () => { //กดปุ่ม สแกนใบหน้า จะเข้าตัวนี้
-        if (!videoRef.current || !isCameraReady || isVerifying) return; //ไม่มี Video, กล้องยังไม่พร้อม, กำลังตรวจอยู่ 
+        if (disabled || !videoRef.current || !isCameraReady || isVerifying) return; //ไม่มี Video, กล้องยังไม่พร้อม, กำลังตรวจอยู่ 
 
         if (!formData.citizenIdCard) { //เช็คอัปโหลดบัตรประชาชนหรือยัง
             alert("กรุณาอัปโหลดบัตรประชาชนในขั้นตอนที่ 3 ก่อนสแกนใบหน้า");
@@ -159,6 +163,8 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
     };
 
     const handleRetake = () => {
+        if (disabled) return;
+
         setFormData((prev) => ({
             ...prev,
             faceScan: null,
@@ -233,7 +239,12 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
                             <button
                                 type="button"
                                 onClick={handleRetake}
-                                className="inline-flex items-center gap-2 rounded-xl bg-gray-600 px-5 py-3 text-white transition hover:bg-gray-700"
+                                disabled={disabled}
+                                className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-white transition ${
+                                    disabled
+                                        ? "cursor-not-allowed bg-gray-300"
+                                        : "bg-gray-600 hover:bg-gray-700"
+                                }`}
                             >
                                 <RefreshCcw className="h-5 w-5" />
                                 ถ่ายใหม่
@@ -243,9 +254,9 @@ export default function FaceScanStep({ formData, setFormData }: FaceScanStepProp
                         <button
                             type="button"
                             onClick={handleCapture}
-                            disabled={!isCameraReady || isVerifying}
+                            disabled={disabled || !isCameraReady || isVerifying}
                             className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-white transition ${
-                                !isCameraReady || isVerifying
+                                disabled || !isCameraReady || isVerifying
                                     ? "cursor-not-allowed bg-gray-300"
                                     : "bg-[#0A84E8] hover:bg-blue-700"
                             }`}

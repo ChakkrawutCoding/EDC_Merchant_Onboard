@@ -1,6 +1,6 @@
 "use client";
 
-import { apiUpload } from "@/lib/api";
+import { apiRequest, apiUpload } from "@/lib/api";
 
 import {
     clearOnboardingDraft,
@@ -9,10 +9,10 @@ import {
 } from "@/lib/onboarding-draft-db";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-import { Check, Play } from "lucide-react";
+import { AlertTriangle, Check, Play } from "lucide-react";
 
 import AppAlert from "@/components/ui/AppAlert";
 
@@ -43,8 +43,65 @@ function dataUrlToFile(dataUrl: string, filename: string, mimeType: string) {
     return new File([bytes], filename, { type: mimeType });
 }
 
+type UploadedDraftFile = NonNullable<FormData["companyCertificate"]>;
+
+function appendUploadedFile(
+    fd: globalThis.FormData, //FormData ตัวจริงของ browser/JavaScript runtime ไม่ใช่ FormData type
+    field: ReviewFileKey,
+    file: UploadedDraftFile | null
+) {
+    if (!file) return;
+
+    fd.append(field, dataUrlToFile(file.base64, file.name, file.type));
+}
+
+type ReviewStatus = "pending" | "approved" | "rejected";
+
+type ReviewFileKey =
+    | "companyCertificate"
+    | "citizenIdCard"
+    | "faceScan"
+    | "bankBook";
+
+type ReviewItem = {
+    status: ReviewStatus;
+    note?: string;
+};
+
+type EditReview = {
+    info: ReviewItem;
+    companyCertificate: ReviewItem;
+    citizenIdCard: ReviewItem;
+    faceScan: ReviewItem;
+    bankBook: ReviewItem;
+};
+
+type EditFormDetail = {
+    id: string;
+    status: string;
+    businessName: string;
+    businessType: string;
+    otherBusinessType: string;
+    taxId: string;
+    tel: string;
+    businessAddress: string;
+    road: string;
+    province: string;
+    district: string;
+    subDistrict: string;
+    zipcode: string;
+    review: EditReview;
+};
+
 export default function UploadPage() {
     const router = useRouter();
+
+    const searchParams = useSearchParams(); //เอาไว้ดึงค่า ?
+
+    const editFormId = searchParams.get("formId");
+    const mode = searchParams.get("mode");
+    const isEditMode = mode === "edit" && Boolean(editFormId);
+
     const { user, loading } = useAuth();
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -58,6 +115,8 @@ export default function UploadPage() {
     const [isRuleAccepted, setIsRuleAccepted] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [editReview, setEditReview] = useState<EditReview | null>(null);
 
     const [appAlert, setAppAlert] = useState<{
         message: string;
@@ -77,6 +136,18 @@ export default function UploadPage() {
 
     function wait(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function canEditFile(field: ReviewFileKey) {
+        if (!isEditMode) return true;
+
+        return editReview?.[field]?.status === "rejected";
+    }
+
+    function canEditInfo() {
+        if (!isEditMode) return true;
+
+        return editReview?.info?.status === "rejected";
     }
 
     const [formData, setFormData] = useState<FormData>({
@@ -99,8 +170,101 @@ export default function UploadPage() {
         faceVerification: null,
     });
 
+    const displayReview = editReview
+        ? {
+            ...editReview,
+            companyCertificate:
+                isEditMode &&
+                editReview.companyCertificate.status === "rejected" &&
+                formData.companyCertificate
+                    ? { ...editReview.companyCertificate, status: "pending" as const }
+                    : editReview.companyCertificate,
+            citizenIdCard:
+                isEditMode &&
+                editReview.citizenIdCard.status === "rejected" &&
+                formData.citizenIdCard
+                    ? { ...editReview.citizenIdCard, status: "pending" as const }
+                    : editReview.citizenIdCard,
+            faceScan:
+                isEditMode &&
+                editReview.faceScan.status === "rejected" &&
+                formData.faceScan
+                    ? { ...editReview.faceScan, status: "pending" as const }
+                    : editReview.faceScan,
+            bankBook:
+                isEditMode &&
+                editReview.bankBook.status === "rejected" &&
+                formData.bankBook
+                    ? { ...editReview.bankBook, status: "pending" as const }
+                    : editReview.bankBook,
+            }
+        : editReview;
+
+    const currentReviewKey: keyof EditReview =
+        currentStep === 1
+            ? "info"
+            : currentStep === 2
+              ? "companyCertificate"
+              : currentStep === 3
+                ? "citizenIdCard"
+                : currentStep === 4
+                  ? "faceScan"
+                  : "bankBook";
+
+    const currentRejectedReview =
+        isEditMode && editReview?.[currentReviewKey]?.status === "rejected"
+            ? editReview[currentReviewKey]
+            : null;
+
+    const currentRejectedNote =
+        currentRejectedReview?.note?.trim() ||
+        "กรุณาตรวจสอบและแก้ไขข้อมูลหรือเอกสารนี้ แล้วส่งกลับมาใหม่อีกครั้ง";
+
     useEffect(() => {
-        if (loading || !user) return;
+        if (loading || !user || !isEditMode || !editFormId) return;
+
+        async function loadEditForm() {
+            try {
+                const data = await apiRequest<{ form: EditFormDetail }>(
+                    `/forms/${editFormId}`
+                );
+
+                setFormData((prev) => ({
+                    ...prev,
+                    businessName: data.form.businessName,
+                    businessType: data.form.businessType,
+                    otherBusinessType: data.form.otherBusinessType,
+                    taxId: data.form.taxId,
+                    tel: data.form.tel,
+                    businessAddress: data.form.businessAddress,
+                    road: data.form.road,
+                    province: data.form.province,
+                    district: data.form.district,
+                    subDistrict: data.form.subDistrict,
+                    zipcode: data.form.zipcode,
+                }));
+
+                setEditReview(data.form.review);
+
+                setCurrentStep(1);
+                setIsDraftLoaded(true);
+            } catch (error) {
+                showAlert(
+                    error instanceof Error
+                        ? error.message
+                        : "โหลดข้อมูลสำหรับแก้ไขไม่สำเร็จ",
+                    "danger"
+                );
+
+                router.replace("/status");
+            }
+        }
+
+        void loadEditForm();
+    }, [loading, user, isEditMode, editFormId, router]);
+
+    useEffect(() => {
+        if (loading || !user || isEditMode) return;
 
         async function loadDraft() {
             const draft = await getOnboardingDraft();
@@ -118,7 +282,7 @@ export default function UploadPage() {
         }
 
         void loadDraft();
-    }, [loading, user]);
+    }, [loading, user, isEditMode]);
 
     const saveDraft = useCallback(
         async (step = currentStep, data = formData) => {
@@ -140,10 +304,10 @@ export default function UploadPage() {
     );
 
     useEffect(() => {
-        if (!user || !isDraftLoaded) return;
+        if (!user || !isDraftLoaded || isEditMode) return;
         
         void saveDraft();
-    }, [user, isDraftLoaded, saveDraft]);
+    }, [user, isDraftLoaded, isEditMode, saveDraft]);
 
     const showSaveToast = () => {
         setIsSaveToastOpen(true);
@@ -182,13 +346,17 @@ export default function UploadPage() {
             return;
         }
 
-        if (currentStep === 4 && !formData.faceVerification?.matched) {
+        if (
+            currentStep === 4 &&
+            (!isEditMode || isRejectedFile("faceScan")) &&
+            !formData.faceVerification?.matched
+        ) {
             showAlert("กรุณาสแกนใบหน้าให้ผ่านก่อนดำเนินการต่อ", "warning");
             return;
         }
 
         if (currentStep === 5) {
-            if (!formData.bankBook) {
+            if ((!isEditMode || isRejectedFile("bankBook")) && !formData.bankBook) {
                 showAlert("กรุณาอัปโหลดสมุดบัญชีก่อนยืนยันการส่ง", "warning");
                 return;
             }
@@ -224,17 +392,41 @@ export default function UploadPage() {
         }
     }, [loading, user, router]);
 
+    function isRejectedFile(field: ReviewFileKey) {
+        return isEditMode && editReview?.[field]?.status === "rejected";
+    }
+
+    const isFaceStepBlocked =
+        currentStep === 4 &&
+        (!isEditMode || isRejectedFile("faceScan")) &&
+        !formData.faceVerification?.matched;
+
+    const isNextButtonDisabled = isSaveToastOpen || isFaceStepBlocked;
+
     async function submitApplication() {
         if (isSubmitting) return;
 
-        if (
-            !formData.companyCertificate ||
-            !formData.citizenIdCard ||
-            !formData.bankBook ||
-            !formData.faceScan
-        ) {
-            showAlert("กรุณาอัปโหลดเอกสารให้ครบถ้วน", "warning");
-            return;
+        if (!isEditMode) {
+            if (
+                !formData.companyCertificate ||
+                !formData.citizenIdCard ||
+                !formData.bankBook ||
+                !formData.faceScan
+            ) {
+                showAlert("กรุณาอัปโหลดเอกสารให้ครบถ้วน", "warning");
+                return;
+            }
+        } else {
+            const missingRejectedFiles =
+                (isRejectedFile("companyCertificate") && !formData.companyCertificate) || //ถ้า...ไม่ผ่าน และ user ยังไม่ได้อัปโหลดใหม่
+                (isRejectedFile("citizenIdCard") && !formData.citizenIdCard) ||
+                (isRejectedFile("faceScan") && !formData.faceScan) ||
+                (isRejectedFile("bankBook") && !formData.bankBook);
+
+            if (missingRejectedFiles) {
+                showAlert("กรุณาอัปโหลดเอกสารที่ไม่ผ่านการตรวจสอบให้ครบถ้วน", "warning");
+                return;
+            }
         }
 
         setIsSubmitting(true);
@@ -259,45 +451,22 @@ export default function UploadPage() {
                 JSON.stringify(formData.faceVerification ?? { matched: false, score: 0 })
             );
 
-            fd.append(
-                "companyCertificate",
-                dataUrlToFile(
-                    formData.companyCertificate.base64,
-                    formData.companyCertificate.name,
-                    formData.companyCertificate.type
-                )
-            );
+            appendUploadedFile(fd, "companyCertificate", formData.companyCertificate);
+            appendUploadedFile(fd, "citizenIdCard", formData.citizenIdCard);
+            appendUploadedFile(fd, "faceScan", formData.faceScan);
+            appendUploadedFile(fd, "bankBook", formData.bankBook);
 
-            fd.append(
-                "citizenIdCard",
-                dataUrlToFile(
-                    formData.citizenIdCard.base64,
-                    formData.citizenIdCard.name,
-                    formData.citizenIdCard.type
-                )
-            );
+            if (isEditMode && editFormId) {
+                await apiUpload(`/forms/${editFormId}/resubmit`, fd, {
+                    method: "PATCH",
+                });
+            } else {
+                await apiUpload("/forms", fd);
+            }
 
-            fd.append(
-                "bankBook",
-                dataUrlToFile(
-                    formData.bankBook.base64,
-                    formData.bankBook.name,
-                    formData.bankBook.type
-                )
-            );
-
-            fd.append(
-                "faceScan",
-                dataUrlToFile(
-                    formData.faceScan.base64,
-                    formData.faceScan.name,
-                    formData.faceScan.type
-                )
-            );
-
-            await apiUpload("/forms", fd);
-
-            await clearOnboardingDraft();
+            if (!isEditMode) {
+                await clearOnboardingDraft();
+            }
 
             showAlert("ส่งเอกสารเรียบร้อย", "success");
 
@@ -343,22 +512,41 @@ export default function UploadPage() {
             <section className="mx-auto max-w-7xl px-6 py-16">
                 <div className="text-center">
                 <h1 className="text-4xl font-bold leading-tight text-gray-900 md:text-6xl">
-                    สมัครใช้งานเครื่องรูดบัตร{" "}
+                    {isEditMode ? "แก้ไขข้อมูลการสมัคร" : "สมัครใช้งานเครื่องรูดบัตร"}{" "}
                     <span className="text-[#0A84E8]">EDC</span>
                 </h1>
 
                 <p className="mt-3 text-gray-600">
-                    ง่าย ๆ ภายใน 5 ขั้นตอน
+                    {isEditMode
+                        ? "กรุณาแก้ไขข้อมูลหรือเอกสารที่ไม่ผ่านการตรวจสอบ"
+                        : "ง่าย ๆ ภายใน 5 ขั้นตอน"}
                 </p>
                 </div>
 
-                <StepIndicator currentStep={currentStep} />
+                <StepIndicator
+                    currentStep={currentStep}
+                    isEditMode={isEditMode}
+                    review={displayReview}
+                />
+
+                {currentRejectedReview && (
+                    <div className="mx-auto mt-6 flex w-full max-w-[900px] items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+                        <div>
+                            <p className="font-semibold">
+                                เอกสารเดิมไม่ผ่านการตรวจสอบ
+                            </p>
+                            <p className="mt-1">{currentRejectedNote}</p>
+                        </div>
+                    </div>
+                )}
 
                 <form onSubmit={handleNextStep}>
                     {currentStep === 1 && (
                         <BusinessInfoStep
                             formData={formData}
                             setFormData={setFormData}
+                            disabled={!canEditInfo()}
                         />
                     )}
 
@@ -366,6 +554,7 @@ export default function UploadPage() {
                         <CompanyDocumentStep
                             formData={formData}
                             setFormData={setFormData}
+                            disabled={!canEditFile("companyCertificate")}
                         />
                     )}
 
@@ -373,6 +562,7 @@ export default function UploadPage() {
                         <CitizenIdCardStep
                             formData={formData}
                             setFormData={setFormData}
+                            disabled={!canEditFile("citizenIdCard")}
                         />
                     )}
 
@@ -380,6 +570,7 @@ export default function UploadPage() {
                         <FaceScanStep
                             formData={formData}
                             setFormData={setFormData}
+                            disabled={!canEditFile("faceScan")}
                         />
                     )}
 
@@ -387,6 +578,7 @@ export default function UploadPage() {
                         <BankBookStep
                             formData={formData}
                             setFormData={setFormData}
+                            disabled={!canEditFile("bankBook")}
                         />
                     )}
 
@@ -411,11 +603,12 @@ export default function UploadPage() {
                         >
                             ย้อนกลับ
                         </button>
+                        
 
                         <button
-                            disabled={isSaveToastOpen || (currentStep === 4 && !formData.faceVerification?.matched)}
+                            disabled={isNextButtonDisabled}
                             className={`rounded-xl px-6 py-3 ${
-                                isSaveToastOpen || (currentStep === 4 && !formData.faceVerification?.matched)
+                                isNextButtonDisabled
                                     ? "cursor-not-allowed bg-gray-300 text-gray-500"
                                     : "cursor-pointer bg-gray-600 text-white"
                             }`}
@@ -643,7 +836,13 @@ export default function UploadPage() {
                                                 }`}
                                             >
                                                 <Play className="h-4 w-4 fill-current" />
-                                                {isSubmitting ? "กำลังส่งเอกสาร..." : "ยืนยันการส่งเอกสาร"}
+                                                {isSubmitting
+                                                    ? isEditMode
+                                                        ? "กำลังส่งข้อมูลแก้ไข..."
+                                                        : "กำลังส่งเอกสาร..."
+                                                    : isEditMode
+                                                        ? "ยืนยันการส่งข้อมูลแก้ไข"
+                                                        : "ยืนยันการส่งเอกสาร"}
                                             </button>
                                         </div>
                                     </motion.div>

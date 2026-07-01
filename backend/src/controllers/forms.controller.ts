@@ -268,3 +268,211 @@ export async function getFormFile(req: AuthRequest, res: Response) {
         });
     }
 }
+
+export async function getFormDetail(req: AuthRequest, res: Response) {
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+
+        const { formId } = req.params;
+
+        const form = await FormModel.findOne({
+            _id: formId,
+            cognitoSub: req.user.cognitoSub, //กัน user A โหลด user B
+        }).lean();
+
+        if (!form) {
+            return res.status(404).json({
+                message: "Form not found",
+            });
+        }
+
+        return res.json({
+            form: {
+                id: String(form._id),
+                status: form.status,
+                businessName: form.businessName,
+                businessType: form.businessType,
+                otherBusinessType: form.otherBusinessType,
+                taxId: form.taxId,
+                tel: form.tel,
+                businessAddress: form.businessAddress,
+                road: form.road,
+                province: form.province,
+                district: form.district,
+                subDistrict: form.subDistrict,
+                zipcode: form.zipcode,
+                review: {
+                    info: form.review?.info ?? { status: "pending", note: "" },
+                    companyCertificate:
+                        form.review?.companyCertificate ?? { status: "pending", note: "" },
+                    citizenIdCard:
+                        form.review?.citizenIdCard ?? { status: "pending", note: "" },
+                    faceScan:
+                        form.review?.faceScan ?? { status: "pending", note: "" },
+                    bankBook:
+                        form.review?.bankBook ?? { status: "pending", note: "" },
+                },
+                submittedAt: form.submittedAt,
+                updatedAt: form.updatedAt,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error instanceof Error ? error.message : "Failed to get form detail",
+        });
+    }
+}
+
+async function uploadNewFile(file: Express.Multer.File | null) {
+    if (!file) return null;
+
+    return uploadBufferToGridFS({
+        buffer: file.buffer,
+        filename: file.originalname,
+        contentType: file.mimetype,
+    });
+}
+
+export async function resubmitForm(req: AuthRequest, res: Response) {
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+
+        const { formId } = req.params;
+
+        const existingForm = await FormModel.findOne({
+            _id: formId,
+            cognitoSub: req.user.cognitoSub,
+        });
+
+        if (!existingForm) {
+            return res.status(404).json({
+                message: "Form not found",
+            });
+        }
+
+        const files = req.files as MulterFiles | undefined;
+
+        const companyCertificate = getUploadedFile(files, "companyCertificate");
+        const citizenIdCard = getUploadedFile(files, "citizenIdCard");
+        const bankBook = getUploadedFile(files, "bankBook");
+        const faceScan = getUploadedFile(files, "faceScan");
+
+        //check rejected file ก่อน save
+        const reviewFileFields: UploadField[] = [
+            "companyCertificate",
+            "citizenIdCard",
+            "bankBook",
+            "faceScan",
+        ];
+
+        for (const field of reviewFileFields) {
+            const isRejected = existingForm.review?.[field]?.status === "rejected";
+            const uploadedFile = getUploadedFile(files, field);
+
+            if (isRejected && !uploadedFile) {
+                return res.status(400).json({
+                    message: `Please upload rejected file: ${field}`,
+                });
+            }
+        }
+
+        const [
+            storedCompanyCertificate,
+            storedCitizenIdCard,
+            storedBankBook,
+            storedFaceScan,
+        ] = await Promise.all([
+            uploadNewFile(companyCertificate),
+            uploadNewFile(citizenIdCard),
+            uploadNewFile(bankBook),
+            uploadNewFile(faceScan),
+        ]);
+
+        const nextFiles = {
+            companyCertificate:
+                storedCompanyCertificate ?? existingForm.files.companyCertificate,
+            citizenIdCard:
+                storedCitizenIdCard ?? existingForm.files.citizenIdCard,
+            bankBook:
+                storedBankBook ?? existingForm.files.bankBook,
+            faceScan:
+                storedFaceScan ?? existingForm.files.faceScan,
+        };
+
+        const nextReview = {
+            info: existingForm.review.info,
+            companyCertificate: existingForm.review.companyCertificate,
+            citizenIdCard: existingForm.review.citizenIdCard,
+            faceScan: existingForm.review.faceScan,
+            bankBook: existingForm.review.bankBook,
+        };
+
+        if (existingForm.review.info?.status === "rejected") {
+            nextReview.info = { status: "pending", note: "" };
+        }
+
+        if (companyCertificate) {
+            nextReview.companyCertificate = { status: "pending", note: "" };
+        }
+
+        if (citizenIdCard) {
+            nextReview.citizenIdCard = { status: "pending", note: "" };
+        }
+
+        if (faceScan) {
+            nextReview.faceScan = { status: "pending", note: "" };
+        }
+
+        if (bankBook) {
+            nextReview.bankBook = { status: "pending", note: "" };
+        }
+
+        existingForm.set({
+            status: "under_review",
+
+            businessName: req.body.businessName,
+            businessType: req.body.businessType,
+            otherBusinessType: req.body.otherBusinessType ?? "",
+            taxId: req.body.taxId,
+            tel: req.body.tel,
+            businessAddress: req.body.businessAddress,
+            road: req.body.road ?? "",
+            province: req.body.province,
+            district: req.body.district,
+            subDistrict: req.body.subDistrict,
+            zipcode: req.body.zipcode,
+
+            files: nextFiles,
+
+            review: nextReview,
+
+            faceVerification: parseFaceVerification(req.body.faceVerification),
+            submittedAt: new Date(),
+        });
+
+        const form = await existingForm.save();
+
+        return res.json({
+            form: {
+                id: String(form._id),
+                status: form.status,
+                businessName: form.businessName,
+                taxId: form.taxId,
+                submittedAt: form.submittedAt,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message:
+                error instanceof Error ? error.message : "Failed to resubmit form",
+        });
+    }
+}
