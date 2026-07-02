@@ -174,8 +174,9 @@ export default function FaceScanStep({ formData, setFormData, disabled = false, 
 
     return (
         <div className="mt-10 flex justify-center">
-            <div className="flex w-[min(92vw,620px)] flex-col rounded-3xl border border-gray-300 bg-white p-5 shadow-sm">
-                <div className="relative flex h-[420px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gray-500 bg-[#F8FBFF]">
+            <div className="flex w-[min(92vw,620px)] flex-col rounded-3xl border border-gray-300 bg-white p-5 shadow-sm dark:bg-[#161823] dark:border-[#252731] transition duration-1000">
+                <div className="relative flex h-[420px] items-center justify-center overflow-hidden rounded-2xl 
+                border-2 border-dashed border-gray-500 bg-[#F8FBFF] dark:bg-[#161823] dark:border-[#252731] transition duration-1000">
                     {formData.faceScan ? (
                         <img
                             src={formData.faceScan.base64}
@@ -183,7 +184,7 @@ export default function FaceScanStep({ formData, setFormData, disabled = false, 
                             className="h-full w-full object-cover"
                         />
                     ) : cameraError ? (
-                        <div className="flex flex-col items-center px-8 text-center text-gray-700">
+                        <div className="flex flex-col items-center px-8 text-center text-gray-700 dark:text-gray-300 transition duration-1000">
                             <AlertCircle className="h-14 w-14 text-red-500" />
                             <p className="mt-4 text-lg font-medium">{cameraError}</p>
                         </div>
@@ -223,13 +224,13 @@ export default function FaceScanStep({ formData, setFormData, disabled = false, 
                                 <span className="font-medium">ใบหน้าไม่ตรงกับบัตรประชาชน</span>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2 text-gray-700">
+                            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 transition duration-1000">
                                 <ScanFace className="h-5 w-5" />
                                 <span>จัดใบหน้าให้อยู่ในกรอบ แล้วกดสแกนใบหน้า</span>
                             </div>
                         )}
 
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-300 transition duration-1000">
                             โหมดนี้เป็นตัวอย่าง flow สำหรับต่อ API ตรวจใบหน้าจริง
                         </p>
                     </div>
@@ -257,7 +258,7 @@ export default function FaceScanStep({ formData, setFormData, disabled = false, 
                             disabled={disabled || !isCameraReady || isVerifying}
                             className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-white transition ${
                                 disabled || !isCameraReady || isVerifying
-                                    ? "cursor-not-allowed bg-gray-300"
+                                    ? "cursor-not-allowed bg-gray-300 dark:bg-[#252731] dark:text-gray-500 transition duration-1000"
                                     : "bg-[#0A84E8] hover:bg-blue-700"
                             }`}
                         >

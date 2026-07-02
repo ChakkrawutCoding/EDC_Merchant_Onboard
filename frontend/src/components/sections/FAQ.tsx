@@ -48,34 +48,34 @@ export default function FAQ() {
 
     return (
         <section className="py-20">
-            <div className="mx-auto max-w-3xl rounded-3xl border-2 border-gray-300 bg-white p-10 shadow-md">
-                <h2 className="mb-10 text-center text-4xl font-bold text-gray-900">
+            <div className="mx-auto max-w-3xl rounded-3xl border-2 border-gray-300 bg-white p-10 shadow-md dark:bg-[#131626] dark:border-gray-500 transition duration-1000">
+                <h2 className="mb-10 text-center text-4xl font-bold text-gray-900 dark:text-gray-200 transition duration-1000">
                 คำถามที่พบบ่อย
                 </h2>
 
                 <div className="space-y-2">
                 {faqs.map((faq, index) => (
                     <div
-                    key={faq.question}
-                    className="border-b border-gray-300 pb-4"
+                        key={faq.question}
+                        className="border-b border-gray-300 pb-4"
                     >
                     <button
                         onClick={() => toggleFAQ(index)}
                         className="flex w-full items-center justify-between py-4 text-left"
                     >
-                        <span className="text-2xl font-semibold text-[#035FC8]">
+                        <span className="text-2xl font-semibold text-[#035FC8] dark:text-[#00A0E6] transition duration-1000">
                         {faq.question}
                         </span>
 
                         {openIndex === index ? (
-                        <ChevronUp className="h-6 w-6 text-[#035FC8]" />
+                        <ChevronUp className="h-6 w-6 text-[#035FC8] dark:text-[#00A0E6] transition duration-1000" />
                         ) : (
-                        <ChevronDown className="h-6 w-6 text-[#035FC8]" />
+                        <ChevronDown className="h-6 w-6 text-[#035FC8] dark:text-[#00A0E6] transition duration-1000" />
                         )}
                     </button>
 
                     {openIndex === index && (
-                        <p className="text-lg text-gray-800 leading-relaxed">
+                        <p className="text-lg text-gray-800 leading-relaxed dark:text-gray-300 transition duration-1000">
                         {faq.answer}
                         </p>
                     )}

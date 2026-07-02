@@ -235,7 +235,7 @@ export default function StatusPage() {
     
     if (loading || !user) {
         return (
-            <main className="min-h-screen bg-[#EAF5FB]">
+            <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#0F111C] transition duration-1000">
                 <Navbar />
     
                 <section className="flex min-h-[calc(100vh-73px)] items-center justify-center px-6">
@@ -247,16 +247,16 @@ export default function StatusPage() {
         );
     } else {
         return (
-            <main className="min-h-screen bg-[#EAF5FB]">
+            <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#0F111C] transition duration-1000">
                 <Navbar />
 
                 <section className="mx-auto max-w-7xl px-6 py-16">
                     <div className="text-center">
-                        <h1 className="text-4xl font-bold text-gray-900 md:text-5xl">
+                        <h1 className="text-4xl font-bold text-gray-900 md:text-5xl transition duration-1000 dark:text-white">
                             ตรวจสอบสถานะ
                         </h1>
 
-                        <p className="mt-2 text-md font-medium text-[#0A9FE8]">
+                        <p className="mt-2 text-md font-medium text-[#0A9FE8] transition duration-1000 dark:text-[#00A0E6]">
                             คำร้องขอสิทธิ์การใช้งานเครื่องรูดบัตร EDC
                         </p>
                     </div>
@@ -281,7 +281,7 @@ export default function StatusPage() {
                                 return (
                                 <article
                                     key={form.id}
-                                    className="overflow-hidden rounded-lg border border-gray-300 bg-white/80 shadow-sm md:grid md:grid-cols-[1fr_64px_150px]"
+                                    className="overflow-hidden rounded-lg border border-gray-300 bg-white/80 shadow-sm md:grid md:grid-cols-[1fr_64px_150px] dark:bg-[#0F111C] transition duration-1000"
                                 >
                                     <div className="bg-[#30313B] px-5 py-5 md:hidden">
                                     <div className="mx-auto max-w-sm space-y-6">
@@ -331,15 +331,15 @@ export default function StatusPage() {
                                         </div>
                                     </div>
                                     </div>
-                                    <div className="relative bg-white/70 p-6">
-                                        <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(135deg,rgba(255,255,255,.8),rgba(226,240,248,.65))]" />
+                                    <div className="relative bg-white/70 p-6 dark:bg-[#0F111C] transition duration-1000">
+                                        <div className="absolute inset-0 opacity-40" />
 
                                         <div className="relative">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                            <p className="text-sm font-semibold text-gray-900">ชื่อกิจการ</p>
+                                            <p className="text-sm font-semibold text-gray-900 transition duration-1000 dark:text-gray-200">ชื่อกิจการ</p>
 
-                                            <h2 className="mt-1 text-2xl font-bold text-[#0A9FE8]">
+                                            <h2 className="mt-1 text-2xl font-bold text-[#0A9FE8] transition duration-1000 dark:text-[#00A0E6]">
                                                 {form.businessName}
                                             </h2>
                                             </div>
@@ -352,13 +352,13 @@ export default function StatusPage() {
                                                 {statusConfig[form.status].label}
                                             </span>
 
-                                            <p className="mt-3 text-xs text-gray-500">
+                                            <p className="mt-3 text-xs text-gray-500 transition duration-1000 dark:text-gray-400">
                                                 {statusConfig[form.status].message}
                                             </p>
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 space-y-3 text-sm text-gray-900">
+                                        <div className="mt-4 space-y-3 text-sm text-gray-900 transition duration-1000 dark:text-gray-200">
                                             <div className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-3">
                                                 <div>
                                                     <p className="font-semibold">ประเภทธุรกิจ</p>
@@ -415,7 +415,7 @@ export default function StatusPage() {
                                             {canEditForm(form) && (
                                                 <Link
                                                     href={`/upload?formId=${form.id}&mode=edit`}
-                                                    className="text-xl font-bold text-[#0A9FE8] underline underline-offset-2"
+                                                    className="cursor-pointer text-xl font-bold text-[#0A9FE8] underline underline-offset-2 transition duration-1000 dark:text-[#00A0E6]"
                                                 >
                                                     แก้ไขข้อมูล
                                                 </Link>
@@ -424,7 +424,7 @@ export default function StatusPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setSelectedForm(form)}
-                                                className="text-xl font-bold text-[#0A9FE8] underline underline-offset-2"
+                                                className="cursor-pointer text-xl font-bold text-[#0A9FE8] underline underline-offset-2 transition duration-1000 dark:text-[#00A0E6]"
                                             >
                                                 รายละเอียด
                                             </button>
@@ -518,7 +518,7 @@ export default function StatusPage() {
                                     <button
                                         type="button"
                                         onClick={() => setSelectedForm(null)}
-                                        className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                                        className="cursor-pointer rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
                                     >
                                         ปิด
                                     </button>

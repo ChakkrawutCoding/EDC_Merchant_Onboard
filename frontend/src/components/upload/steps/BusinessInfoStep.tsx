@@ -70,20 +70,22 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
         (subDistrict) => subDistrict.DISTRICT_ID === districtId
     );
 
-    const inputClass = `w-full rounded border border-gray-400 px-3 py-2 text-sm outline-none placeholder:text-gray-400 ${
+    const inputClass = `w-full rounded border border-gray-400 px-3 py-2 text-sm outline-none placeholder:text-gray-400 transition duration-1000
+                        dark:bg-[#1D1F28] dark:border-[#3B3E4D] dark:placeholder:text-gray-500 placeholder:transition placeholder:duration-1000 dark:text-white ${
         disabled
             ? "cursor-not-allowed bg-gray-100 text-gray-500"
             : "bg-white text-black focus:border-[#0A84E8]"
     }`;
 
-    const selectClass = `w-full appearance-none rounded border border-gray-400 px-3 py-2 pr-10 text-sm outline-none ${
+    const selectClass = `w-full appearance-none rounded border border-gray-400 px-3 py-2 pr-10 text-sm outline-none transition duration-1000
+                        dark:bg-[#1D1F28] dark:border-[#3B3E4D] dark:text-white ${
         disabled
             ? "cursor-not-allowed bg-gray-100 text-gray-500"
             : "cursor-pointer bg-white text-black focus:border-[#0A84E8]"
     }`;
 
     return (
-        <div className="mt-12 rounded-2xl border border-gray-300 bg-[#F8FBFF] p-8 shadow-sm">
+        <div className="mt-12 rounded-2xl border border-gray-300 bg-[#F8FBFF] p-8 shadow-sm dark:bg-[#161823] dark:border-[#252731] transition duration-1000">
             <div className="grid gap-8 md:grid-cols-2">
 
                 {/* LEFT */}
@@ -93,7 +95,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                     {/* ชื่อกิจการ */}
                     <div>
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-gray-900">
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 ชื่อกิจการ <span className="text-red-500">*</span>
                             </label>
 
@@ -101,7 +103,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                 className={`text-xs ${
                                     formData.businessName.length >= BUSINESS_NAME_MAX_LENGTH
                                         ? "text-red-500"
-                                        : "text-gray-500"
+                                        : "text-gray-500 dark:text-gray-300 transition duration-1000"
                                 }`}
                             >
                                 {formData.businessName.length}/{BUSINESS_NAME_MAX_LENGTH}
@@ -128,7 +130,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
 
                     {/* ประเภทธุรกิจ */}
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-900">
+                        <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                             ประเภทธุรกิจ <span className="text-red-500">*</span>
                         </label>
 
@@ -160,7 +162,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                             
                             
                             <ChevronDown
-                                className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500"
+                                className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-300 transition duration-1000"
                             />
                         </div>
                     </div>
@@ -173,7 +175,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                         className={`text-xs ${
                                             formData.otherBusinessType.length >= BUSINESS_TYPE_NAME_MAX_LENGTH
                                                 ? "text-red-500"
-                                                : "text-gray-500"
+                                                : "text-gray-500 dark:text-gray-300 transition duration-1000"
                                         }`}
                                     >
                                         {formData.otherBusinessType.length}/{BUSINESS_TYPE_NAME_MAX_LENGTH}
@@ -203,12 +205,12 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                     {/* เลขประจำตัวผู้เสียภาษี */}
                     <div>
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-gray-900">
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 เลขประจำตัวผู้เสียภาษี (Tax ID) <span className="text-red-500">*</span>
                             </label>
 
                             <span
-                                className="text-xs text-gray-500"
+                                className="text-xs text-gray-500 dark:text-gray-300 transition duration-1000"
                             >
                                 {formData.taxId.length}/{TAX_ID_MAX_LENGTH}
                             </span>
@@ -241,7 +243,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                         />
 
                         {taxIdError && (
-                            <p className="mt-1 text-xs text-red-500">
+                            <p className="mt-1 text-xs text-red-500 dark:text-[#FF5858] transition duration-1000">
                                 {taxIdError}
                             </p>
                         )}
@@ -250,12 +252,12 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                     {/* เบอร์โทรติดต่อ */}
                     <div>
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-gray-900">
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 เบอร์โทรติดต่อ <span className="text-red-500">*</span>
                             </label>
 
                             <span
-                                className="text-xs text-gray-500"
+                                className="text-xs text-gray-500 dark:text-gray-300 transition duration-1000"
                             >
                                 {formData.tel.length}/10
                             </span>
@@ -288,7 +290,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                         />
 
                         {telError && (
-                            <p className="mt-1 text-xs text-red-500">
+                            <p className="mt-1 text-xs text-red-500 dark:text-[#FF5858] transition duration-1000">
                                 {telError}
                             </p>
                         )}
@@ -302,7 +304,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                     {/* ที่อยู่กิจการ */}
                     <div>
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-gray-900">
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 ที่อยู่กิจการ <span className="text-red-500">*</span>
                             </label>
 
@@ -310,7 +312,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                 className={`text-xs ${
                                     formData.businessAddress.length >= BUSINESS_ADDRESS_MAX_LENGTH
                                         ? "text-red-500"
-                                        : "text-gray-500"
+                                        : "text-gray-500 dark:text-gray-300 transition duration-1000"
                                 }`}
                             >
                                 {formData.businessAddress.length}/{BUSINESS_ADDRESS_MAX_LENGTH}
@@ -340,7 +342,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                         {/* ถนน */}
                         <div>
                             <div className="mb-2 flex items-center justify-between gap-2">
-                                <label className="block text-sm font-medium text-gray-900">
+                                <label className="block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                     ถนน
                                 </label>
 
@@ -348,7 +350,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                     className={`text-xs ${
                                         formData.road.length >= ROAD_MAX_LENGTH
                                             ? "text-red-500"
-                                            : "text-gray-500"
+                                            : "text-gray-500 dark:text-gray-300 transition duration-1000"
                                     }`}
                                 >
                                     {formData.road.length}/{ROAD_MAX_LENGTH}
@@ -373,7 +375,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
 
                         {/* จังหวัด */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">
+                            <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 จังหวัด <span className="text-red-500">*</span>
                             </label>
 
@@ -405,7 +407,6 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                             <option
                                                 key={province.PROVINCE_ID}
                                                 value={province.PROVINCE_ID}
-                                                className="text-black"
                                             >
                                                 {province.PROVINCE_NAME}
                                             </option>
@@ -413,14 +414,14 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                 </select>
 
                                 <ChevronDown
-                                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500"
+                                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-300 transition duration-1000"
                                 />
                             </div>
                         </div>
 
                         {/* เขต/อำเภอ */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">
+                            <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 เขต/อำเภอ <span className="text-red-500">*</span>
                             </label>
 
@@ -451,7 +452,6 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                             <option
                                                 key={district.DISTRICT_ID}
                                                 value={district.DISTRICT_ID}
-                                                className="text-black"
                                             >
                                                 {district.DISTRICT_NAME}
                                             </option>
@@ -459,7 +459,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                 </select>
 
                                 <ChevronDown
-                                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500"
+                                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-300 transition duration-1000"
                                 />
                             </div>
                         </div>
@@ -470,7 +470,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
 
                         {/* แขวง/ตำบล */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">
+                            <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                 แขวง/ตำบล <span className="text-red-500">*</span>
                             </label>
 
@@ -500,7 +500,6 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                             <option
                                                 key={subDistrict.SUB_DISTRICT_ID}
                                                 value={subDistrict.SUB_DISTRICT_ID}
-                                                className="text-black"
                                             >
                                                 {subDistrict.SUB_DISTRICT_NAME}
                                             </option>
@@ -508,7 +507,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                                 </select>
 
                                 <ChevronDown
-                                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500"
+                                    className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-300 transition duration-1000"
                                 />
                             </div>
                         </div>
@@ -516,12 +515,12 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                         {/* รหัสไปรษณีย์ */}
                         <div>
                             <div className="mb-2 flex items-center justify-between gap-2">
-                                <label className="block text-sm font-medium text-gray-900">
+                                <label className="block text-sm font-medium text-gray-900 dark:text-white transition duration-1000">
                                     รหัสไปรษณีย์ <span className="text-red-500">*</span>
                                 </label>
 
                                 <span
-                                    className="text-xs text-gray-500"
+                                    className="text-xs text-gray-500 dark:text-gray-300 transition duration-1000"
                                 >
                                     {formData.zipcode.length}/{ZIPCODE_MAX_LENGTH}
                                 </span>
@@ -552,7 +551,7 @@ export default function BusinessInfoStep({ formData, setFormData, disabled = fal
                             />
 
                             {zipcodeError && (
-                                <p className="mt-1 text-xs text-red-500">
+                                <p className="mt-1 text-xs text-red-500 dark:text-[#FF5858] transition duration-1000">
                                     {zipcodeError}
                                 </p>
                             )}

@@ -91,10 +91,9 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
 
     return (
         <div className="mt-10 flex flex-col items-center justify-center gap-8 lg:flex-row lg:gap-12">
-
             {isReadingFile ? (
-                <div className="flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
-                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-500 bg-[#F8FBFF] px-8">
+                <div className="flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-6 shadow-sm dark:bg-[#252731] transition duration-1000">
+                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-500 bg-[#F8FBFF] px-8 dark:bg-[#161823] dark:border-[#252731] transition duration-1000">
                         <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
 
                         <div className="mt-12 w-full">
@@ -105,7 +104,7 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
                                 />
                             </div>
 
-                            <div className="mt-3 flex justify-between gap-3 text-sm text-gray-900">
+                            <div className="mt-3 flex justify-between gap-3 text-sm text-gray-900 dark:text-gray-300 transition duration-1000">
                                 <div className="min-w-0">
                                     <p>กำลังโหลดไฟล์</p>
                                     <p className="truncate text-gray-500">
@@ -122,11 +121,11 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
             ) : formData.bankBook ? (
 
                 /* Uploaded State */
-                <div className="flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm">
+                <div className="flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col rounded-3xl border border-gray-300 bg-white p-4 shadow-sm dark:bg-[#161823] dark:border-[#252731] transition duration-1000">
 
                     <div 
                         onClick={() => setIsPreviewOpen(true)}
-                        className="relative flex flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-2xl bg-gray-100"
+                        className="relative flex flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#252731] transition duration-1000"
                     >
 
                         <div className="absolute inset-0 z-10" />
@@ -155,7 +154,7 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
 
                     <div className="mt-4 flex items-center justify-between">
                         <div>
-                            <p className="max-w-[200px] truncate text-sm font-medium text-gray-900">
+                            <p className="max-w-[200px] truncate text-sm font-medium text-gray-900 dark:text-gray-300 transition duration-1000">
                                 {formData.bankBook.name}
                             </p>
 
@@ -200,20 +199,20 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
                     />
 
                     <div
-                        className={`flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-400 bg-[#F8FBFF] p-10 text-center transition ${
+                        className={`flex h-[440px] w-full max-w-[490px] lg:w-[490px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-400 bg-[#F8FBFF] p-10 text-center dark:bg-[#161823] dark:border-[#252731] transition duration-1000${
                             disabled
                                 ? "opacity-50"
-                                : "hover:border-[#0A84E8] hover:bg-blue-50"
+                                : "hover:border-[#0A84E8] hover:bg-blue-50 dark:hover:bg-[#252731]"
                         }`}
                     >
 
                         <FileText className="h-20 w-20 text-gray-700" />
 
-                        <p className="mt-6 text-lg text-gray-700">
+                        <p className="mt-6 text-lg text-gray-700 transition duration-1000 dark:text-gray-300">
                             อัปโหลดไฟล์ (PDF, JPG, PNG)
                         </p>
 
-                        <p className="mt-1 text-md text-gray-500">
+                        <p className="mt-1 text-md text-gray-500 transition duration-1000 dark:text-gray-400">
                             ไฟล์ขนาดสูงสุด 5MB
                         </p>
                     </div>
@@ -222,15 +221,16 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
             )}
 
             {/* Example Section */}
-            <div className="flex h-[440px] w-full max-w-[320px] lg:w-[320px] flex-col items-center overflow-hidden rounded-3xl border border-gray-300 bg-white p-6 shadow-sm">
+            <div className="flex h-[440px] w-full max-w-[320px] lg:w-[320px] flex-col items-center overflow-hidden rounded-3xl border 
+            border-gray-300 bg-white p-6 shadow-sm dark:bg-[#161823] dark:border-[#252731] transition duration-1000">
 
-                <h3 className="text-3xl font-bold text-gray-900">
+                <h3 className="text-3xl font-bold text-gray-900 transition duration-1000 dark:text-gray-300">
                     ตัวอย่าง
                 </h3>
 
                 <div
                     onClick={() => setIsExamplePreviewOpen(true)}
-                    className="mt-4 flex flex-1 items-center cursor-pointer justify-center overflow-hidden rounded-xl bg-gray-100"
+                    className="mt-4 flex flex-1 items-center cursor-pointer justify-center overflow-hidden rounded-xl bg-gray-100 dark:bg-[#252731] transition duration-1000"
                 >
                     <img
                         src={bankBookExample}
@@ -248,7 +248,7 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
 
                     <div
                         onClick={(event) => event.stopPropagation()}
-                        className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
+                        className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4 dark:bg-[#252731] transition duration-1000"
                     >
 
                         {formData.bankBook?.type?.startsWith("image/") ? (
@@ -279,7 +279,7 @@ export default function BankBookStep({ formData, setFormData, disabled = false, 
 
                     <div
                         onClick={(event) => event.stopPropagation()}
-                        className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4"
+                        className="max-h-[90vh] max-w-[90vw] overflow-hidden rounded-3xl bg-white p-4 dark:bg-[#252731] transition duration-1000"
                     >
                         <img
                             src={bankBookExample}

@@ -4,7 +4,7 @@ import FAQ from "@/components/sections/FAQ";
 
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-[#EAF5FB]">
+    <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#131626] transition duration-1000">
       <Navbar />
       <ContactHero />
       <FAQ />

@@ -481,7 +481,7 @@ export default function UploadPage() {
 
     if (loading || !user) {
         return (
-            <main className="min-h-screen bg-[#EAF5FB]">
+            <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#0F111C] transition duration-1000">
             <Navbar />
 
                 <section className="flex min-h-[calc(100vh-73px)] items-center justify-center px-6">
@@ -493,7 +493,7 @@ export default function UploadPage() {
         );
     } else {
     return (
-        <main className="min-h-screen bg-[#EAF5FB]">
+        <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#0F111C] transition duration-1000">
             <Navbar />
 
             <div
@@ -511,12 +511,13 @@ export default function UploadPage() {
 
             <section className="mx-auto max-w-7xl px-6 py-16">
                 <div className="text-center">
-                <h1 className="text-4xl font-bold leading-tight text-gray-900 md:text-6xl">
+                <h1 className="text-4xl font-bold leading-tight text-gray-900 transition duration-1000 dark:text-white">
                     {isEditMode ? "แก้ไขข้อมูลการสมัคร" : "สมัครใช้งานเครื่องรูดบัตร"}{" "}
-                    <span className="text-[#0A84E8]">EDC</span>
+                    <span className="text-[#0A84E8] dark:text-[#00A0E6]
+                        transition duration-1000">EDC</span>
                 </h1>
 
-                <p className="mt-3 text-gray-600">
+                <p className="mt-3 text-gray-600 transition duration-1000 dark:text-gray-400">
                     {isEditMode
                         ? "กรุณาแก้ไขข้อมูลหรือเอกสารที่ไม่ผ่านการตรวจสอบ"
                         : "ง่าย ๆ ภายใน 5 ขั้นตอน"}
@@ -610,7 +611,7 @@ export default function UploadPage() {
                             className={`rounded-xl px-6 py-3 ${
                                 isNextButtonDisabled
                                     ? "cursor-not-allowed bg-gray-300 text-gray-500"
-                                    : "cursor-pointer bg-gray-600 text-white"
+                                    : "cursor-pointer bg-gray-600 text-white hover:bg-gray-700"
                             }`}
                             type="submit"
                         >

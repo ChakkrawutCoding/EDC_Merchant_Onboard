@@ -42,7 +42,7 @@ export default function StepIndicator({
             return {
                 circle: "bg-slate-500 text-white",
                 activeRing: "bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300",
-                text: "text-gray-700",
+                text: "text-gray-700 dark:text-gray-400",
                 label: "",
             };
         }
@@ -118,12 +118,12 @@ export default function StepIndicator({
                             </div>
 
                             <p
-                                className={`mt-2 w-full px-1 text-center text-sm leading-snug [overflow-wrap:anywhere] ${
+                                className={`mt-2 w-full px-1 text-center text-sm leading-snug [overflow-wrap:anywhere] transition duration-1000 ${
                                     isActive && !isEditMode
-                                        ? "font-semibold text-[#0A84E8]"
+                                        ? "font-semibold text-[#0A84E8] dark:text-[#00A0E6]"
                                         : isEditMode
                                         ? style.text
-                                        : "text-gray-700"
+                                        : "text-gray-700 dark:text-gray-400"
                                 }`}
                             >
                                 {step.label}

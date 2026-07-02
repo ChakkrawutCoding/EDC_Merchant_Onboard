@@ -6,13 +6,16 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
+import ThemeToggle from "@/components/layout/ThemeToggle";
+import { useTheme } from "@/lib/theme-context";
 
 export default function Navbar() {
+    const { theme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user, loading } = useAuth();
     
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+        <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-[#131626] transition duration-1000">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 
                 {/* Left Side */}
@@ -25,14 +28,14 @@ export default function Navbar() {
                     >
                         <>
                             {!isMenuOpen && (
-                                <Menu className="h-8 w-8 text-gray-700" />
+                                <Menu className="h-8 w-8 text-gray-700 dark:text-gray-400 transition duration-1000" />
                             )}
                         </>
                     </button>
                     {/* Logo */}
                     <div className="hidden md:block">
                         <Image
-                            src="/logo/digio-logo.svg"
+                            src={theme === "dark" ? "/logo/digio-white-logo.svg" : "/logo/digio-logo.svg"}
                             alt="Digio Logo"
                             width={120}
                             height={40}
@@ -43,44 +46,48 @@ export default function Navbar() {
                 
                 {/* Middle Side */}
                 <nav className="hidden gap-8 md:flex">
-                    <Link href="/" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition">
+                    <Link href="/" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition dark:text-gray-200 dark:hover:text-blue-400">
                         EDC คืออะไร
                     </Link>
 
-                    <Link href="/upload" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition">
+                    <Link href="/upload" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition dark:text-gray-200 dark:hover:text-blue-400">
                         อัพโหลดเอกสาร
                     </Link>
 
-                    <Link href="/status" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition">
+                    <Link href="/status" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition dark:text-gray-200 dark:hover:text-blue-400">
                         ตรวจสอบสถานะ
                     </Link>
 
-                    <Link href="/contact" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition">
+                    <Link href="/contact" className="text-sm text-gray-700 hover:text-blue-600 hover:scale-105 transition dark:text-gray-200 dark:hover:text-blue-400">
                         ติดต่อเจ้าหน้าที่
                     </Link>
                 </nav>
                 
                 {/* Right Side */}
-                {loading ? (
-                    <div className="h-10 w-28 rounded-full bg-gray-100" />
-                ) : user ? (
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
+                    <ThemeToggle />
+
+                    {loading ? (
+                        <div className="h-10 w-28 rounded-full bg-gray-100" />
+                    ) : user ? (
+                        <div className="flex items-center gap-3">
+                            <Link
+                                href="/logout"
+                                className="max-w-[180px] truncate rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:scale-105 hover:bg-blue-700"
+                                title={user.name}
+                            >
+                                {user.name}
+                            </Link>
+                        </div>
+                        ) : (
                         <Link
-                            href="/logout"
-                            className="max-w-[180px] truncate rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:scale-105 hover:bg-blue-700"
-                            title={user.name}
+                            href="/login"
+                            className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:scale-105 hover:bg-blue-700"
                         >
-                            {user.name}
+                            เข้าสู่ระบบ
                         </Link>
-                    </div>
-                    ) : (
-                    <Link
-                        href="/login"
-                        className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:scale-105 hover:bg-blue-700"
-                    >
-                        เข้าสู่ระบบ
-                    </Link>
-                )}
+                    )}
+                </div>
             </div>
             
             {/* Mobile Side Bar */}
@@ -99,7 +106,7 @@ export default function Navbar() {
 
                         {/* Sidebar */}
                         <motion.div
-                            className="fixed left-0 top-0 z-50 h-screen w-72 bg-[#1D5594] p-6 shadow-2xl md:hidden"
+                            className="fixed left-0 top-0 z-50 h-screen w-72 bg-[#1D5594] p-6 shadow-2xl md:hidden dark:bg-[#1C2031]"
                             initial={{ x: -300 }}
                             animate={{ x: 0 }}
                             exit={{ x: -300 }}
