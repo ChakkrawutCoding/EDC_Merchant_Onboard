@@ -1,8 +1,9 @@
 import { FileText, CheckCircle2 } from "lucide-react";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { FormData } from "@/types/form";
+import ReplaceFileConfirmDialog from "../ReplaceFileConfirmDialog";
 
 type CompanyDocumentStepProps = {
     formData: FormData;
@@ -27,6 +28,9 @@ export default function CompanyDocumentStep({ formData, setFormData, disabled = 
 
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isExamplePreviewOpen, setIsExamplePreviewOpen] = useState(false);
+    const [isReplaceConfirmOpen, setIsReplaceConfirmOpen] = useState(false);
+
+    const replaceFileInputRef = useRef<HTMLInputElement | null>(null);
 
     const fileToBase64 = (file: File, onProgress: (loaded: number, total: number) => void): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -164,6 +168,32 @@ export default function CompanyDocumentStep({ formData, setFormData, disabled = 
                             </div>
                         </div>
 
+                        <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => {
+                                if (disabled) return;
+                                setIsReplaceConfirmOpen(true);
+                            }}
+                            className={`text-sm font-medium ${
+                                disabled
+                                    ? "cursor-not-allowed text-gray-400"
+                                    : "cursor-pointer text-[#0A84E8] hover:underline"
+                            }`}
+                        >
+                            อัปโหลด
+                        </button>
+
+                        <input
+                            ref={replaceFileInputRef}
+                            type="file"
+                            disabled={disabled}
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            hidden
+                            onChange={handleFileChange}
+                        />
+
+                        {false && (
                         <label
                             className={`text-sm font-medium ${
                                 disabled
@@ -181,6 +211,7 @@ export default function CompanyDocumentStep({ formData, setFormData, disabled = 
                                 onChange={handleFileChange}
                             />
                         </label>
+                        )}
                     </div>
                 </div>
 
@@ -268,6 +299,16 @@ export default function CompanyDocumentStep({ formData, setFormData, disabled = 
                     </div>
                 </div>
             )}
+
+            <ReplaceFileConfirmDialog
+                open={isReplaceConfirmOpen}
+                fileLabel="หนังสือรับรองบริษัท"
+                onCancel={() => setIsReplaceConfirmOpen(false)}
+                onConfirm={() => {
+                    setIsReplaceConfirmOpen(false);
+                    replaceFileInputRef.current?.click();
+                }}
+            />
 
             {isExamplePreviewOpen && ( //Pop up Preview kub
                 <div

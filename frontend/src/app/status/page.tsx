@@ -332,7 +332,9 @@ export default function StatusPage() {
                                     </div>
                                     </div>
                                     <div className="relative bg-white/70 p-6 dark:bg-[#0F111C] transition duration-1000">
-                                        <div className="absolute inset-0 opacity-40" />
+                                        <div
+                                            className="absolute inset-0 bg-[url('/img/statusBG.png')] bg-cover bg-center dark:opacity-20 opacity-3 transition duration-1000"
+                                        />
 
                                         <div className="relative">
                                         <div className="flex items-start justify-between gap-4">

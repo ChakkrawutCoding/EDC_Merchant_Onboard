@@ -5,10 +5,13 @@ import type { FormData as OnboardingFormData } from "@/types/form";
 const DB_NAME = "edc-onboarding-db";
 const DB_VERSION = 1;
 const STORE_NAME = "drafts";
-const DRAFT_ID = "current";
+
+export function getOnboardingDraftId(cognitoSub: string) {
+    return `user:${cognitoSub}:current`;
+}
 
 export type OnboardingDraft = {
-    id: typeof DRAFT_ID;
+    id: string;
     currentStep: number;
     formData: OnboardingFormData;
     savedAt: string;
@@ -27,26 +30,27 @@ async function getDraftDb() {
 }
 
 export async function saveOnboardingDraft(
+    draftId: string,
     draft: Omit<OnboardingDraft, "id">
 ) {
     const db = await getDraftDb();
 
     await db.put(STORE_NAME, {
-        id: DRAFT_ID,
+        id: draftId,
         ...draft,
     });
 }
 
-export async function getOnboardingDraft() {
+export async function getOnboardingDraft(draftId: string) {
     const db = await getDraftDb();
 
-    return db.get(STORE_NAME, DRAFT_ID) as Promise<
+    return db.get(STORE_NAME, draftId) as Promise<
         OnboardingDraft | undefined
     >;
 }
 
-export async function clearOnboardingDraft() {
+export async function clearOnboardingDraft(draftId: string) {
     const db = await getDraftDb();
 
-    await db.delete(STORE_NAME, DRAFT_ID);
+    await db.delete(STORE_NAME, draftId);
 }

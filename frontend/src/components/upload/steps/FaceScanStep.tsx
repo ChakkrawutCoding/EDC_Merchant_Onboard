@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 
 import {
     AlertCircle,
@@ -17,6 +17,11 @@ type FaceScanStepProps = {
     setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 
     disabled?: boolean;
+
+    showAlert: (
+        message: string,
+        variant?: "default" | "success" | "danger" | "warning"
+    ) => void;
 };
 
 type VerificationResult = {
@@ -24,7 +29,12 @@ type VerificationResult = {
     score: number;
 };
 
-export default function FaceScanStep({ formData, setFormData, disabled = false, }: FaceScanStepProps) {
+export default function FaceScanStep({
+    formData,
+    setFormData,
+    disabled = false,
+    showAlert,
+}: FaceScanStepProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null); //Kept Video Element
     const streamRef = useRef<MediaStream | null>(null); //Kept Camera Stream
 
@@ -113,7 +123,7 @@ export default function FaceScanStep({ formData, setFormData, disabled = false, 
         if (disabled || !videoRef.current || !isCameraReady || isVerifying) return; //ไม่มี Video, กล้องยังไม่พร้อม, กำลังตรวจอยู่ 
 
         if (!formData.citizenIdCard) { //เช็คอัปโหลดบัตรประชาชนหรือยัง
-            alert("กรุณาอัปโหลดบัตรประชาชนในขั้นตอนที่ 3 ก่อนสแกนใบหน้า");
+            showAlert("กรุณาอัปโหลดบัตรประชาชนในขั้นตอนที่ 3 ก่อนสแกนใบหน้า", "warning");
             return;
         }
 
@@ -156,7 +166,7 @@ export default function FaceScanStep({ formData, setFormData, disabled = false, 
             }
         } catch (error) {
             console.error("Face verification failed:", error);
-            alert("ตรวจสอบใบหน้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+            showAlert("ตรวจสอบใบหน้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง", "danger");
         } finally {
             setIsVerifying(false);
         }

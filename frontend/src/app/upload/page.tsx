@@ -5,6 +5,7 @@ import { apiRequest, apiUpload } from "@/lib/api";
 import {
     clearOnboardingDraft,
     getOnboardingDraft,
+    getOnboardingDraftId,
     saveOnboardingDraft,
 } from "@/lib/onboarding-draft-db";
 
@@ -12,7 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-import { AlertTriangle, Check, Play } from "lucide-react";
+import { AlertTriangle, Play } from "lucide-react";
 
 import AppAlert from "@/components/ui/AppAlert";
 
@@ -103,11 +104,10 @@ export default function UploadPage() {
     const isEditMode = mode === "edit" && Boolean(editFormId);
 
     const { user, loading } = useAuth();
+    const draftId = user ? getOnboardingDraftId(user.cognitoSub) : null;
 
     const [currentStep, setCurrentStep] = useState(1);
     const [isDraftLoaded, setIsDraftLoaded] = useState(false);
-
-    const [isSaveToastOpen, setIsSaveToastOpen] = useState(false);
 
     const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
@@ -267,7 +267,9 @@ export default function UploadPage() {
         if (loading || !user || isEditMode) return;
 
         async function loadDraft() {
-            const draft = await getOnboardingDraft();
+            if (!draftId) return;
+
+            const draft = await getOnboardingDraft(draftId);
 
             if (draft) {
                 setFormData((prev) => ({
@@ -287,11 +289,13 @@ export default function UploadPage() {
     const saveDraft = useCallback(
         async (step = currentStep, data = formData) => {
             try {
-                await saveOnboardingDraft({
+                if (!draftId) return;
+
+                await saveOnboardingDraft(draftId, {
                     currentStep: step,
                     formData: data,
                     savedAt: new Date().toISOString(),
-            });
+                });
             } catch (error) {
                 console.error("Save draft failed:", error);
                 showAlert(
@@ -300,7 +304,7 @@ export default function UploadPage() {
                 );
             }
         },
-        [currentStep, formData]
+        [currentStep, formData, draftId]
     );
 
     useEffect(() => {
@@ -310,11 +314,7 @@ export default function UploadPage() {
     }, [user, isDraftLoaded, isEditMode, saveDraft]);
 
     const showSaveToast = () => {
-        setIsSaveToastOpen(true);
-
-        setTimeout(() => {
-            setIsSaveToastOpen(false);
-        }, 2000);
+        showAlert("Auto Saved Complete การบันทึกอัตโนมัติสำเร็จ", "success");
     };
 
     const isBusinessInfoValid = () => {
@@ -338,8 +338,6 @@ export default function UploadPage() {
 
     const handleNextStep = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        if (isSaveToastOpen) return;
 
         if (currentStep === 1 && !isBusinessInfoValid()) {
             showAlert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง", "warning");
@@ -401,7 +399,7 @@ export default function UploadPage() {
         (!isEditMode || isRejectedFile("faceScan")) &&
         !formData.faceVerification?.matched;
 
-    const isNextButtonDisabled = isSaveToastOpen || isFaceStepBlocked;
+    const isNextButtonDisabled = isFaceStepBlocked;
 
     async function submitApplication() {
         if (isSubmitting) return;
@@ -465,7 +463,9 @@ export default function UploadPage() {
             }
 
             if (!isEditMode) {
-                await clearOnboardingDraft();
+                if (draftId) {
+                    await clearOnboardingDraft(draftId);
+                }
             }
 
             showAlert("ส่งเอกสารเรียบร้อย", "success");
@@ -496,18 +496,6 @@ export default function UploadPage() {
         <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#0F111C] transition duration-1000">
             <Navbar />
 
-            <div
-                className={`fixed left-1/2 top-20 z-[1000] w-[min(90vw,720px)] -translate-x-1/2 rounded-md border-2 border-green-500 bg-green-100 px-4 py-2 text-sm font-medium text-green-600 shadow-lg transition-all duration-500 ease-out ${
-                    isSaveToastOpen
-                        ? "translate-y-0 opacity-100"
-                        : "pointer-events-none -translate-y-12 opacity-0"
-                }`}
-            >
-                <div className="flex items-center justify-center gap-3">
-                    <Check className="h-5 w-5 shrink-0 stroke-[3]" />
-                    <span>Auto Saved Complete การบันทึกอัตโนมัติสำเร็จ</span>
-                </div>
-            </div>
 
             <section className="mx-auto max-w-7xl px-6 py-16">
                 <div className="text-center">
@@ -572,6 +560,7 @@ export default function UploadPage() {
                             formData={formData}
                             setFormData={setFormData}
                             disabled={!canEditFile("faceScan")}
+                            showAlert={showAlert}
                         />
                     )}
 
@@ -586,17 +575,15 @@ export default function UploadPage() {
                     <div className="mt-10 flex justify-center gap-4">
                         <button
                             onClick={() => {
-                                if (isSaveToastOpen) return;
-
                                 const previousStep = Math.max(currentStep - 1, 1);
 
                                 setCurrentStep(previousStep);
                                 showSaveToast();
                             }}
-                            disabled={currentStep === 1 || isSaveToastOpen}
+                            disabled={currentStep === 1}
                             
                             className={`rounded-xl px-6 py-3 transition ${
-                                currentStep === 1 || isSaveToastOpen
+                                currentStep === 1
                                     ? "cursor-not-allowed bg-gray-300 text-gray-500"
                                     : "cursor-pointer bg-gray-600 text-white hover:bg-gray-700"
                             }`}
