@@ -9,7 +9,7 @@ import {
     saveOnboardingDraft,
 } from "@/lib/onboarding-draft-db";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
@@ -94,7 +94,7 @@ type EditFormDetail = {
     review: EditReview;
 };
 
-export default function UploadPage() {
+function UploadPageContent() {
     const router = useRouter();
 
     const searchParams = useSearchParams(); //เอาไว้ดึงค่า ?
@@ -851,4 +851,23 @@ export default function UploadPage() {
         </main>
     );
     }
+}
+
+export default function UploadPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="min-h-screen bg-[#EAF5FB] dark:bg-[#0F111C] transition duration-1000">
+                    <Navbar />
+                    <section className="flex min-h-[calc(100vh-73px)] items-center justify-center px-6">
+                        <p className="text-center text-gray-600 dark:text-gray-300">
+                            กำลังโหลดหน้าอัปโหลด...
+                        </p>
+                    </section>
+                </main>
+            }
+        >
+            <UploadPageContent />
+        </Suspense>
+    );
 }
