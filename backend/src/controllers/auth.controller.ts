@@ -16,10 +16,12 @@ const ID_TOKEN_COOKIE = "idToken";
 const REFRESH_TOKEN_COOKIE = "refreshToken";
 const AUTH_USERNAME_COOKIE = "authUsername";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: process.env.COOKIE_SECURE === "true",
-    sameSite: "lax" as const,
+    secure: isProduction,
+    sameSite: isProduction ? "none" as const : "lax" as const,
 };
 
 function setTokenCookies(
