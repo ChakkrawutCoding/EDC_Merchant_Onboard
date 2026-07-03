@@ -12,6 +12,11 @@ import districts from "@/data/districts.json";
 import subDistricts from "@/data/subDistricts.json";
 
 import { apiRequest } from "@/lib/api";
+import {
+    getOnboardingDraft,
+    getOnboardingDraftId,
+    type OnboardingDraft,
+} from "@/lib/onboarding-draft-db";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -153,13 +158,45 @@ function getFormFileUrl(formId: string, fileKey: string) {
 }
 
 function canEditForm(form: FormItem) {
-    return form.status === "rejected" || form.status === "editing";
+    return !form.isDraft && (form.status === "rejected" || form.status === "editing");
+}
+
+function createDraftStatusCard(draft: OnboardingDraft): FormItem {
+    const { formData } = draft;
+    const pendingReviewItem: ReviewItem = { status: "pending" };
+
+    return {
+        id: draft.id,
+        isDraft: true,
+        status: "editing",
+        businessName: formData.businessName || "(แบบร่างการสมัคร)",
+        businessType: formData.businessType || "-",
+        otherBusinessType: formData.otherBusinessType || "",
+        taxId: formData.taxId || "-",
+        tel: formData.tel || "-",
+        businessAddress: formData.businessAddress || "-",
+        road: formData.road || "-",
+        province: formData.province || "",
+        district: formData.district || "",
+        subDistrict: formData.subDistrict || "",
+        zipcode: formData.zipcode || "-",
+        review: {
+            info: pendingReviewItem,
+            companyCertificate: pendingReviewItem,
+            citizenIdCard: pendingReviewItem,
+            faceScan: pendingReviewItem,
+            bankBook: pendingReviewItem,
+        },
+        submittedAt: draft.savedAt,
+        updatedAt: draft.savedAt,
+    };
 }
 
 type FormStatus = "editing" | "pending" | "under_review" | "approved" | "rejected";
 
 type FormItem = {
     id: string;
+    isDraft?: boolean;
     status: FormStatus;
     businessName: string;
     businessType: string;
@@ -203,6 +240,7 @@ export default function StatusPage() {
     const router = useRouter();
     const { user, loading } = useAuth();
     const [forms, setForms] = useState<FormItem[]>([]);
+    const [draftForm, setDraftForm] = useState<FormItem | null>(null);
     const [isFormsLoading, setIsFormsLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedForm, setSelectedForm] = useState<FormItem | null>(null);
@@ -232,6 +270,23 @@ export default function StatusPage() {
 
         void fetchForms();
     }, [loading, user]);
+
+    useEffect(() => {
+        if (loading || !user) return;
+
+        async function fetchDraft() {
+            if (!user) return;
+
+            const draftId = getOnboardingDraftId(user.cognitoSub);
+            const draft = await getOnboardingDraft(draftId);
+
+            setDraftForm(draft ? createDraftStatusCard(draft) : null);
+        }
+
+        void fetchDraft();
+    }, [loading, user]);
+
+    const visibleForms = draftForm ? [draftForm, ...forms] : forms;
     
     if (loading || !user) {
         return (
@@ -269,13 +324,13 @@ export default function StatusPage() {
                         <p className="mt-6 text-red-600">{error}</p>
                     )}
 
-                    {!isFormsLoading && !error && forms.length === 0 && (
+                    {!isFormsLoading && !error && visibleForms.length === 0 && (
                         <p className="mt-6 text-gray-600">ยังไม่มีรายการสมัคร</p>
                     )}
 
-                    {!isFormsLoading && !error && forms.length > 0 && (
+                    {!isFormsLoading && !error && visibleForms.length > 0 && (
                         <div className="mt-12 space-y-10">
-                            {forms.map((form) => {
+                            {visibleForms.map((form) => {
                                 const StatusIcon = statusConfig[form.status].icon;
 
                                 return (
@@ -414,6 +469,15 @@ export default function StatusPage() {
                                         </div>
 
                                         <div className="mt-4 flex justify-end gap-6">
+                                            {form.isDraft && (
+                                                <Link
+                                                    href="/upload"
+                                                    className="cursor-pointer text-xl font-bold text-[#0A9FE8] underline underline-offset-2 transition duration-1000 dark:text-[#00A0E6]"
+                                                >
+                                                    กลับไปแก้ไขต่อ
+                                                </Link>
+                                            )}
+
                                             {canEditForm(form) && (
                                                 <Link
                                                     href={`/upload?formId=${form.id}&mode=edit`}
@@ -425,6 +489,7 @@ export default function StatusPage() {
 
                                             <button
                                                 type="button"
+                                                hidden={form.isDraft}
                                                 onClick={() => setSelectedForm(form)}
                                                 className="cursor-pointer text-xl font-bold text-[#0A9FE8] underline underline-offset-2 transition duration-1000 dark:text-[#00A0E6]"
                                             >
