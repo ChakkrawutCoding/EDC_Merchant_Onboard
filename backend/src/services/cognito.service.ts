@@ -5,6 +5,9 @@ import {
     InitiateAuthCommand,
     GlobalSignOutCommand,
     ResendConfirmationCodeCommand,
+    AdminGetUserCommand,
+    AdminDeleteUserCommand,
+    UsernameExistsException,
 } from "@aws-sdk/client-cognito-identity-provider";
 import crypto from "node:crypto";
 
@@ -14,6 +17,7 @@ const client = new CognitoIdentityProviderClient({
 
 const CLIENT_ID = process.env.COGNITO_CLIENT_ID;
 const CLIENT_SECRET = process.env.COGNITO_CLIENT_SECRET;
+const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
 function assertCognitoEnv() { //Check if anything missing
     if (!process.env.AWS_REGION) {
@@ -26,6 +30,10 @@ function assertCognitoEnv() { //Check if anything missing
 
     if (!CLIENT_SECRET) {
         throw new Error("COGNITO_CLIENT_SECRET is missing");
+    }
+
+    if (!USER_POOL_ID) {
+        throw new Error("COGNITO_USER_POOL_ID is missing");
     }
 }
 
@@ -43,15 +51,12 @@ function computeSecretHash(username: string): string {
         .digest("base64");
 }
 
-//Regiser user เข้า Cognito แล้ว Cognito จะส่ง verification code ไป email
-export async function cognitoSignUp(params: {
+async function signUpWithCognito(params: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
 }) {
-    assertCognitoEnv();
-
     await client.send(
         new SignUpCommand({
             ClientId: CLIENT_ID!,
@@ -62,9 +67,56 @@ export async function cognitoSignUp(params: {
                 { Name: "email", Value: params.email },
                 { Name: "given_name", Value: params.firstName },
                 { Name: "family_name", Value: params.lastName },
-            ]
-        })  
+            ],
+        })
     );
+}
+
+async function deleteUnconfirmedUser(email: string) {
+    const user = await client.send(
+        new AdminGetUserCommand({
+            UserPoolId: USER_POOL_ID!,
+            Username: email,
+        })
+    );
+
+    if (user.UserStatus !== "UNCONFIRMED") {
+        return false;
+    }
+
+    await client.send(
+        new AdminDeleteUserCommand({
+            UserPoolId: USER_POOL_ID!,
+            Username: email,
+        })
+    );
+
+    return true;
+}
+
+//Regiser user เข้า Cognito แล้ว Cognito จะส่ง verification code ไป email
+export async function cognitoSignUp(params: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+}) {
+    assertCognitoEnv();
+
+    try {
+        await signUpWithCognito(params);
+    } catch (error) {
+        if (error instanceof UsernameExistsException) {
+            const deleted = await deleteUnconfirmedUser(params.email);
+
+            if (deleted) {
+                await signUpWithCognito(params);
+                return;
+            }
+        }
+
+        throw error;
+    }
 }
 
 //ใช้ยืนยัน code จาก email
@@ -175,3 +227,4 @@ export async function cognitoResendConfirmationCode(email: string) {
         })
     );
 }
+

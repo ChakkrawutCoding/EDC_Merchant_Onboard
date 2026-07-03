@@ -161,6 +161,28 @@ function canEditForm(form: FormItem) {
     return !form.isDraft && (form.status === "rejected" || form.status === "editing");
 }
 
+function hasDraftContent(draft: OnboardingDraft) {
+    const { formData } = draft;
+
+    return Boolean(
+        formData.businessName ||
+        formData.businessType ||
+        formData.otherBusinessType ||
+        formData.taxId ||
+        formData.tel ||
+        formData.businessAddress ||
+        formData.road ||
+        formData.province ||
+        formData.district ||
+        formData.subDistrict ||
+        formData.zipcode ||
+        formData.companyCertificate ||
+        formData.citizenIdCard ||
+        formData.faceScan ||
+        formData.bankBook
+    );
+}
+
 function createDraftStatusCard(draft: OnboardingDraft): FormItem {
     const { formData } = draft;
     const pendingReviewItem: ReviewItem = { status: "pending" };
@@ -280,7 +302,7 @@ export default function StatusPage() {
             const draftId = getOnboardingDraftId(user.cognitoSub);
             const draft = await getOnboardingDraft(draftId);
 
-            setDraftForm(draft ? createDraftStatusCard(draft) : null);
+            setDraftForm(draft && hasDraftContent(draft) ? createDraftStatusCard(draft) : null);
         }
 
         void fetchDraft();
@@ -325,7 +347,7 @@ export default function StatusPage() {
                     )}
 
                     {!isFormsLoading && !error && visibleForms.length === 0 && (
-                        <p className="mt-6 text-gray-600">ยังไม่มีรายการสมัคร</p>
+                        <p className="mt-6 text-gray-600 flex items-center justify-center dark:text-gray-400 transition duration-1000">ยังไม่มีรายการสมัคร</p>
                     )}
 
                     {!isFormsLoading && !error && visibleForms.length > 0 && (
